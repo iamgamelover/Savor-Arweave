@@ -1,0 +1,68 @@
+.activity-post-page {
+  padding: 20px;
+  max-width: 550px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+}
+
+.activity-post-page-header {
+  background-color: var(--section-header-color);
+  border-radius: 10px;
+  padding: 5px;
+  display: grid;
+  grid-template-columns: 40px 1fr 65px;
+  align-items: center;
+}
+
+.activity-post-page-back-button {
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  font-size: 18pt;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff80;
+}
+
+.activity-post-page-editor-header {
+  display: flex;
+  align-items: center;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: var(--section-header-color);
+  /* font-size: 0.8em; */
+  /* color: #ffffff40; */
+  padding-left: 15px;
+  margin-top: 10px;
+  height: 34px;
+}
+
+.activity-post-page-reply-container { 
+  border: 1px solid #ffffff40;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 20px;
+  margin-bottom: 0px;
+}
+
+.activity-post-page-reply-header {
+  font-size: 0.9em;
+  color: lightgray;
+  margin-top: 20px;
+}
+
+.activity-post-page-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+  /* column-gap: 10px; */
+}
+
+@media (max-width: 600px) {
+  .activity-post-page {
+    padding: 10px;
+  }
+}

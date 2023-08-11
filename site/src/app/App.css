@@ -1,0 +1,266 @@
+/* :root {
+  --page-color: rgb(34, 37, 43);
+  --section-color: rgb(30, 32, 37);
+  --section-header-color: rgb(69, 72, 80);
+  --item-color: rgb(32, 33, 37);
+  --body-color: rgb(23, 25, 29);
+  --header-color: rgb(56, 58, 64);
+  --header-menu-color: rgb(43, 46, 53);
+  --button-color: rgb(123, 168, 75);
+  --button-hover-color: rgb(99, 147, 49);
+  --gray-text-color: #ffffff80;
+  --link-color: rgb(98, 98, 216);
+} */
+
+:root {
+  --page-color: rgb(95, 153, 45);
+  --section-color: rgb(83, 53, 4);
+  --section-header-color: rgb(101, 70, 7);
+  --item-color: rgb(32, 33, 37);
+  --body-color: rgb(83, 53, 4);
+  --header-color: rgb(162, 103, 9);
+  --header-menu-color: rgb(117, 81, 11);
+  --button-color: rgb(44, 86, 155);
+  --button-hover-color: rgb(43, 101, 195);
+  --gray-text-color: #ffffff80;
+  --link-color: rgb(98, 98, 216);
+}
+
+html {
+  font-family: Lato;
+  font-size: 110%;
+  line-height: 25px;
+}
+
+body {
+  background: var(--body-color);
+  margin: 0px;
+  color: white;
+}
+
+input {
+  font-size: inherit;
+  font-family: inherit;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 6px;
+  border: 0px;
+  padding: 0px 10px 0px 10px;
+}
+
+textarea {
+  font-size: inherit;
+  font-family: inherit;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 6px;
+  border: 0px;
+  padding: 5px 10px 5px 10px;
+}
+
+[data-lastpass-icon-root] { display: none !important; }
+
+button {
+  font-size: inherit;
+  font-family: inherit;
+  background-color: var(--button-color);
+  color: white;
+  border-radius: 10px;
+  border: 0px;
+  cursor: pointer;
+  padding: 0px 20px 0px 20px;
+  min-height: 40px;
+  min-width: 80px;
+}
+
+.button:disabled, button[disabled] {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+select {
+  font-size: inherit;
+  font-family: inherit;
+  height: 40px;
+  border-radius: 6px;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--link-color);
+}
+
+/* custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: var(--section-color)
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: var(--section-header-color)
+}
+
+/* app styles */
+
+.app-container {
+  height: 100vh;
+  max-height: -webkit-fill-available;
+  display: grid;
+  grid-template-rows: 50px 1fr;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.app-navbar {
+  background-color: var(--header-color);
+}
+
+.app-content {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  overflow-y: auto;
+}
+
+.app-page {
+  background-color: var(--page-color);
+  overflow-x: auto;
+} 
+
+@media (max-width: 850px) {
+  .app-content {
+    grid-template-columns: 70px 1fr;
+  }
+}
+
+@media (max-width: 710px) {
+  .app-content {
+    grid-template-columns: 0px 1fr;
+  }
+
+  .app-content {
+    overflow-y: visible;
+  }
+}
+
+/* ---- Quill editor config ----*/
+
+.ql-editor {
+  font-family: Lato;
+  font-size: 1.4em;
+}
+
+.ql-container {
+  border-bottom-left-radius: 0.5em;
+  border-bottom-right-radius: 0.5em;
+}
+
+.ql-container.ql-snow { 
+  border: none !important;
+  background-color: var(--section-color);
+}
+
+.ql-toolbar {
+  border-top-left-radius: 0.5em;
+  border-top-right-radius: 0.5em;
+}
+
+.ql-toolbar.ql-snow { 
+  border: none !important; 
+  background-color: var(--section-header-color);
+}
+
+.ql-toolbar .ql-stroke {
+  fill: none !important;
+  stroke: #fff !important;
+}
+
+.ql-toolbar .ql-fill {
+  fill: #fff !important;
+  stroke: none !important;
+}
+
+.ql-toolbar .ql-picker {
+  color: #fff !important;
+}
+
+.ql-picker-item {
+  color: black !important;
+}
+
+.ql-picker-item:hover {
+  color: #06c !important;
+}
+
+.ql-toolbar button {
+  min-width: unset;
+  min-height: unset;
+}
+
+.ql-toolbar button:hover .ql-stroke {
+  fill: none !important;
+  stroke: yellow !important;
+}
+
+.ql-toolbar button:hover .ql-fill {
+  fill: yellow !important;
+  stroke: none !important;
+}
+
+.ql-toolbar button.ql-active .ql-stroke {
+  fill: none !important;
+  stroke: yellow !important;
+}
+
+.ql-toolbar button.ql-active .ql-fill {
+  fill: yellow !important;
+  stroke: none !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #ffffff80 !important;
+}
+
+.ql-toolbar .ql-picker-label:hover {
+  color: yellow !important;
+}
+
+.ql-toolbar .ql-picker-label.ql-active {
+  color: yellow !important;
+}
+
+.ql-toolbar .ql-picker-label:hover .ql-stroke {
+  fill: none !important;
+  stroke: yellow !important;
+}
+
+.ql-toolbar .ql-picker-label.ql-active .ql-stroke {
+  fill: none !important;
+  stroke: yellow !important;
+}
+
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-right {
+  text-align: right;
+}
+
+.ql-editor-image {
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.ql-video {
+  width: 100%;
+  height: 300px;
+}

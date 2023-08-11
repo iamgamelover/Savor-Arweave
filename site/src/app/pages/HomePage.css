@@ -1,0 +1,261 @@
+.home-page {
+  padding-bottom: 10px;
+}
+
+.home-page-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: auto;
+}
+
+.home-page-header {
+  position: relative;
+}
+
+.home-page-banner {
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .home-page-banner {
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+   }
+}
+
+.home-page-portrait {
+  width: 100px;
+  position: absolute;
+  bottom: -45px;
+  left: 10px;
+  border-radius: 50%;
+}
+
+.home-page-action-container {
+  text-align: right;
+  margin: 5px 10px 0px 0px;
+}
+
+@media (min-width: 600px) {
+  .home-page-action-container {
+    margin-right: 0px;
+   }
+}
+
+.home-page-section-header {
+  display: flex;
+  margin: 20px 10px 0px 10px;
+  background-color: var(--section-header-color);
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  padding: 6px;
+  padding-left: 8px;
+  justify-content: space-between;
+}
+
+.home-page-section-header-link {
+  color: white;  
+  text-align: right;
+  font-size: 0.9em;
+  padding-top: 0px;
+  padding-right: 5px;
+}
+
+.home-page-section-container {
+  display: flex;
+  overflow-x: auto;
+  margin-left: 10px;
+  margin-right: 10px;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  background-color: var(--section-color);
+  column-gap: 10px;
+  padding: 10px;
+}
+
+.home-page-section-message {
+  margin: 0px 20px 20px 20px;
+  color: #ffffff80;
+}
+
+.home-page-game-container {
+  color: white;
+  text-decoration: none;
+}
+
+.home-page-game-image {
+  width: 140px;
+  border-radius: 10px;
+}
+
+.home-page-game-name {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.8em;
+}
+
+.home-page-friend-container {
+  color: white;
+  text-decoration: none;
+  position: relative;
+}
+
+.home-page-friend-portrait {
+  width: 70px;
+}
+
+.home-page-friend-online {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: green;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+
+.home-page-friend-name {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-page-asset-container, .home-page-banner-container {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #00000020;
+}
+
+.home-page-banner-container {
+  padding: 0px;
+  width: 90px;
+  height: 90px;
+  overflow: hidden;
+}
+
+.home-page-banner-image {
+  width: 200px;
+}
+
+.home-page-asset-image {
+  width: 200px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.home-page-asset-name {
+  text-align: center;
+  margin-top: 5px;
+  font-size: 0.8em;
+}
+
+.home-page-data-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
+  border: 1px solid #ffffff40;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.home-page-data-row {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 160px 1fr 32px;
+}
+
+.home-page-plan-container {
+  border: 1px solid yellow;
+  border-radius: 10px;
+  padding: 0 10px;
+  margin: 15px 0;
+}
+
+.home-page-plan-title {
+  font-size: 25px;
+  color: yellow;
+}
+
+.home-page-filter-container {
+  background-color: var(--section-header-color);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.home-page-dreams-container {
+  background-color: var(--section-color);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
+  row-gap: 10px;
+}
+
+.home-page-dreams-row {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr 1fr;
+}
+
+.home-page-filter {
+  margin: 0 10px;
+  cursor: pointer;
+  padding: 3px;
+}
+
+.home-page-filter.selected {
+  border-bottom: 1px solid white;
+}
+
+.home-page-navlink {
+  cursor: pointer;
+  color: #ffffffa0;
+}
+
+.home-page-posts {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  /* margin-top: 10px; */
+}
+
+@media (max-width: 600px) {
+  .home-page-filter-container {
+    margin: 10px;
+  }
+  
+  .home-page-posts {
+    margin: 10px;
+  }
+  
+  .home-page-data-container {
+    margin: 10px;
+  }
+
+  .home-page-dreams-container {
+    margin: 10px;
+  }
+
+  .home-page-plan-margin {
+    margin: 0 10px;
+  }
+
+  .home-page-plan-container {
+    padding: 0;
+    margin: 15px 10px;
+  }
+}

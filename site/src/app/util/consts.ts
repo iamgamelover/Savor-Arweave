@@ -1,0 +1,10 @@
+export const msg_wait = "Please wait...";
+export const msg_success = "Operation successful!";
+export const ARWEAVE_GATEWAY = "https://arseed.web3infra.dev/";
+// export const ARWEAVE_GATEWAY = "https://arweave.net/";
+export const POSTS_SHEET_ID = process.env.REACT_APP_POSTS_SHEET_ID;
+export const REPLIES_SHEET_ID = process.env.REACT_APP_REPLIES_SHEET_ID;
+export const PLANS_SHEET_ID = process.env.REACT_APP_PLANS_SHEET_ID;
+export const MISSIONS_SHEET_ID = process.env.REACT_APP_MISSIONS_SHEET_ID;
+export const RESOURCES_SHEET_ID = process.env.REACT_APP_RESOURCES_SHEET_ID;
+export const USERS_SHEET_ID = process.env.REACT_APP_USERS_SHEET_ID;

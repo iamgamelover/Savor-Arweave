@@ -1,0 +1,56 @@
+.activity-page {
+  padding: 20px;
+  max-width: 550px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+}
+
+.activity-page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.activity-page-filter {
+  width: 150px;
+  padding: 0 10px;
+}
+
+.activity-page-word-count {
+  font-size: 0.8em;
+  color: gray;
+  margin-top: 5px;
+}
+
+.activity-page-slug-link {
+  color: rgb(108, 108, 234);
+  text-decoration: none;
+}
+
+.activity-page-editor-header {
+  display: flex;
+  align-items: center;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: var(--section-header-color);
+  /* font-size: 0.8em; */
+  /* color: #ffffff40; */
+  padding-left: 15px;
+  margin-top: 10px;
+  height: 34px;
+}
+
+.activity-page-input-container {
+  border: 1px solid #ffffff40;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 600px) {
+  .activity-page {
+    padding: 10px;
+  }
+}

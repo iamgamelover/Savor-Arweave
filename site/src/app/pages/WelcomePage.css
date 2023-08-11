@@ -1,0 +1,140 @@
+.welcome-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 80px;
+  padding: 0 30px;
+  background-color: black;
+}
+
+.welcome-page-header {
+  display: flex;
+  align-items: center;
+}
+
+.welcome-page-header-image {
+  width: 500px;
+}
+
+.welcome-page-slug {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.welcome-page-row {
+  display: flex;
+  align-items: center;
+  column-gap: 50px;
+}
+
+.welcome-page-row-image {
+  width: 450px;
+}
+
+.welcome-page-row-image-mobile {
+  display: none;
+}
+
+.welcome-page-row-text {
+  font-size: 25px;
+  line-height: 35px;
+}
+
+.welcome-page-pick {
+  font-size: 35px;
+  color: yellow;
+  text-align: center;
+}
+
+.welcome-page-dream-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px 30px;
+}
+
+.welcome-page-dream {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: rgb(59, 37, 37);
+}
+
+.welcome-page-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 50px 0;
+}
+
+.welcome-page-foot-text {
+  font-size: 39px;
+  font-weight: 700;
+  line-height: 50px;
+  text-align: center;
+}
+
+.welcome-page-foot-button {
+  width: 150px;
+  font-size: 22px;
+  text-align: center;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid rgb(182, 149, 149);
+  margin-top: 30px;
+  cursor: pointer;
+}
+
+.welcome-page-foot-button:hover {
+  border: 1px solid rgb(243, 235, 235);
+}
+
+@media (max-width: 1020px) {
+  .welcome-page-header {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .welcome-page {
+    row-gap: 80px;
+    padding: 0 20px;
+  }
+
+  .welcome-page-header-image {
+    width: 330px;
+  }
+
+  .welcome-page-slug {
+    font-size: 21px;
+    padding-top: 20px;
+  }
+
+  .welcome-page-pick {
+    font-size: 27px;
+  }
+
+  .welcome-page-dream-container {
+    gap: 20px 20px;
+  }
+
+  .welcome-page-row {
+    display: flex;
+    flex-direction: column;
+    row-gap: 50px;
+  }
+
+  .welcome-page-row-image {
+    display: none;
+  }
+
+  .welcome-page-row-image-mobile {
+    display: block;
+    width: 330px;
+  }
+  
+  .welcome-page-row-text {
+    font-size: 22px;
+    line-height: 33px;
+  }
+}

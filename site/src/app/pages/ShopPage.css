@@ -1,0 +1,50 @@
+.shop-page {
+  padding: 10px;
+  margin: auto;
+}
+
+.shop-card-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 15px;
+  row-gap: 15px;
+  margin-top: 15px;
+}
+
+.shop-page-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 10px;
+  justify-content: space-between;
+  background-color: var(--section-color);
+  border-radius: 10px;
+}
+
+.shop-page-filter-panel {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.shop-currency-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 10px 0px 10px;
+  column-gap: 5px;
+  height: 60px;
+}
+
+.shop-currency-icon {
+  width: 32px;
+  height: 32px;
+  padding-left: 3px;
+}
+
