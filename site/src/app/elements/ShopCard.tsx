@@ -49,7 +49,7 @@ class ShopCard extends React.Component<ShopCardProps, ShopCardState> {
     }
 
     let icon = (currency == 'coin') ? 'coin' : AppConfig.token.id;
-    let iconSrc = '/assets/' + icon + '.png';
+    let iconSrc = '/' + icon + '.png';
 
     let priceStr = price.toFixed(0);
 
