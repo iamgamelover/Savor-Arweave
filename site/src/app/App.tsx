@@ -12,9 +12,9 @@ import './App.css';
 import { AppConfig } from './AppConfig';
 import ActivityPage from './pages/ActivityPage';
 import ActivityPostPage from './pages/ActivityPostPage';
-import PlanPage from './pages/PlanPage';
-import PlansPage from './pages/PlansPage';
-import EditPlanPage from './pages/EditPlanPage';
+import TopicPage from './pages/TopicPage';
+import TopicsPage from './pages/TopicsPage';
+import EditTopicPage from './pages/EditTopicPage';
 import MissionPage from './pages/MissionPage';
 import WelcomePage from './pages/WelcomePage';
 import MissionsPage from './pages/MissionsPage';
@@ -91,10 +91,10 @@ class App extends React.Component<{}, AppState> {
             <Route index element={<HomePage />} />
             <Route path='/activity' element={<ActivityPage />} />
             <Route path='/activity/post/:id' element={<ActivityPostPage />} />
-            <Route path='/plans' element={<PlansPage />} />
-            <Route path='/plan/:id' element={<PlanPage />} />
-            <Route path='/plan/new' element={<EditPlanPage />} />
-            <Route path='/plan/edit/:id' element={<EditPlanPage />} />
+            <Route path='/topics' element={<TopicsPage />} />
+            <Route path='/topic/:id' element={<TopicPage />} />
+            <Route path='/topic/new' element={<EditTopicPage />} />
+            <Route path='/topic/edit/:id' element={<EditTopicPage />} />
             <Route path='/missions' element={<MissionsPage />} />
             <Route path='/mission/:id' element={<MissionPage />} />
             <Route path='/shop' element={<ShopPage />} />

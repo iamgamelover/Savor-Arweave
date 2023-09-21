@@ -8,14 +8,13 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill } from 'react-icons/bs';
 import { checkContent } from './ActivityPage';
-import { POSTS_SHEET_ID, REPLIES_SHEET_ID } from '../util/consts';
-import MissionPanel from '../elements/MissionPanel';
+import { TIPS_ARWEAVE } from '../util/consts';
 
-const category = new Map([[0, 'Videos'], [1, 'Articles'], [2, 'Games']]);
+// const category = new Map([[0, 'Doing'], [1, 'Learning']]);
 
 interface MissionPageState {
   mission: any;
-  resources: any;
+  posts: any;
   message: string;
   alert: string;
   loading: boolean;
@@ -26,14 +25,14 @@ class MissionPage extends React.Component<{}, MissionPageState> {
 
   quillRef: any;
   wordCount = 0;
-  missionCid: string;
+  missionId: string;
   filterSelected = 0;
 
   constructor(props: {}) {
     super(props);
     this.state = {
       mission: '',
-      resources: [],
+      posts: [],
       message: '',
       alert: '',
       loading: true,
@@ -53,32 +52,31 @@ class MissionPage extends React.Component<{}, MissionPageState> {
   }
 
   async getMission(noCache?: boolean) {
-    this.missionCid = window.location.pathname.substring(9);
-    let mission     = Server.public.getMissionFromCache(this.missionCid);
+    this.missionId = window.location.pathname.substring(9);
+    let mission    = Server.public.getMissionFromCache(this.missionId);
 
     if (!mission || noCache) {
-      let response = await Server.plans.getMission(this.missionCid);
+      let response = await Server.topic.getMission(this.missionId);
       if (!response.success) return;
       mission = response.mission;
     }
 
     console.log("mission:", mission)
     this.setState({ mission, loading: false });
-    this.getResources(category.get(this.filterSelected));
+    this.getMissionPosts(this.filterSelected.toString());
   }
 
-  async getResources(category: string) {
-    if (this.state.resources.length == 0)
+  async getMissionPosts(missionIndex: string) {
+    if (this.state.posts.length == 0)
       this.setState({loading: true});
 
-    let response = await Server.plans.getResources(category);
+    let response = await Server.activity.getMissionPosts(this.missionId, missionIndex);
     if (!response.success) return;
 
-    let resources = response.resources;
     // Server.public.addRepliesToCache(this.missionCid, resources);
-    console.log("resources:", resources)
+    console.log("mission posts:", response.posts)
 
-    this.setState({resources, loading: false});
+    this.setState({posts: response.posts, loading: false});
   }
 
   async onReply() {
@@ -96,7 +94,7 @@ class MissionPage extends React.Component<{}, MissionPageState> {
       content: encodeURIComponent(html)
     };
 
-    let response = await Server.activity.createReply(this.missionCid, params);
+    let response = await Server.activity.createReply(this.missionId, params);
 
     if (response.success) {
       this.quillRef.setText('');
@@ -113,7 +111,7 @@ class MissionPage extends React.Component<{}, MissionPageState> {
 
   renderReplies() {
     let divs = [];
-    let replies = this.state.resources;
+    let replies = this.state.posts;
     
     for (let i = 0; i < replies.length; i++)
       divs.push(<ActivityPost key={i} data={replies[i]} isReply={true} />)
@@ -128,14 +126,14 @@ class MissionPage extends React.Component<{}, MissionPageState> {
   onFilter(index: number) {
     this.filterSelected = index;
     this.renderFilters();
-    this.setState({resources: [], openEditor: false});
+    this.setState({posts: [], openEditor: false});
     setTimeout(() => {
-      this.getResources(category.get(index));
+      this.getMissionPosts(index.toString());
     }, 10);
   }
 
   renderFilters() {
-    let filters = ['Videos', 'Articles', 'Games'];
+    let filters = ['Doing', 'Learning'];
 
     let divs = [];
     for (let i = 0; i < filters.length; i++) {
@@ -163,34 +161,35 @@ class MissionPage extends React.Component<{}, MissionPageState> {
 
     let html   = this.quillRef.root.innerHTML;
     let params = {
-      missionCID: this.missionCid,
-      category: category.get(this.filterSelected),
+      missionId: this.missionId,
+      missionIndex: this.filterSelected.toString(),
       content: encodeURIComponent(html)
     };
 
-    let response = await Server.plans.createResource(params);
+    let response = await Server.activity.createPost(params, true);
 
     if (response.success) {
       this.quillRef.setText('');
-      this.setState({message: ''});
-      this.getResources(category.get(this.filterSelected));
+      this.setState({message: '', alert: TIPS_ARWEAVE});
     }
     else
       this.setState({message: '', alert: response.message})
   }
 
-  renderResources() {
+  renderMissionPosts() {
     if (this.state.loading)
       return (<div>Loading...</div>);
 
     let divs = [];
-    for (let i = 0; i < this.state.resources.length; i++)
-      divs.push(<MissionPanel key={i} data={this.state.resources[i]} isResource={true} />);
+    for (let i = 0; i < this.state.posts.length; i++)
+      divs.push(<ActivityPost key={i} data={this.state.posts[i]} />);
 
-    return divs.length > 0 ? divs : <div>No resources yet.</div>
+    return divs.length > 0 ? divs : <div>No posts yet.</div>
   }
 
   render() {
+    let placeholder = this.filterSelected === 0 ? 'Whats new doing?' : 'Whats new learning?';
+
     return (
       <div className="mission-page">
         <div className="mission-page-header">
@@ -199,7 +198,7 @@ class MissionPage extends React.Component<{}, MissionPageState> {
         </div>
 
         {this.state.mission &&
-          <MissionPanel data={this.state.mission} />
+          <ActivityPost data={this.state.mission} isMission={true} />
         }
 
         {this.state.mission && 
@@ -214,7 +213,7 @@ class MissionPage extends React.Component<{}, MissionPageState> {
         {this.state.openEditor &&
           <div className="mission-page-input-container">
             <SharedQuillEditor 
-              placeholder = 'Whats new learning resources?'
+              placeholder={placeholder}
               onChange={this.onContentChange}
               getRef={(ref: any) => this.quillRef = ref}
             />
@@ -225,31 +224,7 @@ class MissionPage extends React.Component<{}, MissionPageState> {
           </div>
         }
 
-        {this.state.mission && this.renderResources()}
-
-        {/* {!this.state.loading &&
-          <div className="mission-page-reply-container">
-            <SharedQuillEditor 
-              placeholder='Enter reply...'
-              onChange={this.onContentChange}
-              getRef={(ref: any) => this.quillRef = ref} 
-            />
-
-            <div className='mission-page-action'>
-              <button onClick={()=>this.onReply()}>Post</button>
-            </div>
-          </div>
-        } */}
-
-        {/* {!this.state.loading && 
-          <div className='mission-page-reply-header'>
-            {this.state.replies.length} Replies
-          </div>
-        } */}
-
-        {/* {!this.state.loading && 
-          this.renderReplies()
-        } */}
+        {this.state.mission && this.renderMissionPosts()}
 
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={()=>this.onAlertClose()} />

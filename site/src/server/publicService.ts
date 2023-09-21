@@ -3,6 +3,8 @@ import { Service } from './service';
 import BadWords from '../app/util/badWords';
 import { Server } from './server';
 import { genAPI, genNodeAPI, getTokenTagByEver } from 'arseeding-js';
+import { ARWEAVE_GATEWAY, ETH_TAG } from '../app/util/consts';
+import { fetchGraphQL, msOfNow } from '../app/util/util';
 
 declare var window: any;
 
@@ -11,8 +13,8 @@ export class PublicService extends Service {
   protected posts:any;
   protected post:any;
   protected replies:any;
-  protected plans:any;
-  protected plan:any;
+  protected topics:any;
+  protected topic:any;
   protected missions:any;
   protected mission:any;
   protected position:number;
@@ -22,7 +24,7 @@ export class PublicService extends Service {
     this.profiles = [];
     this.post = [];
     this.replies = [];
-    this.plan = [];
+    this.topic = [];
     this.mission = [];
   }
 
@@ -40,7 +42,7 @@ export class PublicService extends Service {
       return {success: true};
 
     for(let i = 0; i < missing.length; i++) {
-      let response = await Server.user.getProfileFromServer(missing[i]);
+      let response = await Server.public.getProfileFromServer(missing[i]);
       if(!response.success) continue;
     }
 
@@ -51,13 +53,13 @@ export class PublicService extends Service {
     if(this.profiles[id])
       return {success: true, profile: this.profiles[id]};
 
-    let response = await Server.user.getProfileFromServer(id);
+    let response = await Server.public.getProfileFromServer(id);
 
     if(!response.success)
       return {success: false, message: 'User is not exist.'};
 
     let profile = response.user;
-    this.addProfileToCache(profile);
+    // this.addProfileToCache(profile);
 
     return {success: true, profile};
   }
@@ -68,19 +70,19 @@ export class PublicService extends Service {
   }
 
   public addPostToCache(post:any) {
-    this.post[post.cid] = post;
+    this.post[post.id] = post;
   }
 
-  public getPostFromCache(cid:string) {
-    return this.post[cid];
+  public getPostFromCache(id:string) {
+    return this.post[id];
   }
 
-  public addRepliesToCache(cid:string, replies:any) {
-    this.replies[cid] = replies;
+  public addRepliesToCache(id:string, replies:any) {
+    this.replies[id] = replies;
   }
 
-  public getRepliesFromCache(cid:string) {
-    return this.replies[cid];
+  public getRepliesFromCache(id:string) {
+    return this.replies[id];
   }
 
   public addPostsToCache(posts:any) {
@@ -103,24 +105,24 @@ export class PublicService extends Service {
     return this.position;
   }
 
-  public addPlansToCache(plans:any) {
-    this.plans = plans;
+  public addTopisToCache(topics:any) {
+    this.topics = topics;
   }
 
-  public getPlansFromCache() {
-    return this.plans;
+  public getTopicsFromCache() {
+    return this.topics;
   }
 
-  public removePlansFromCache() {
-    this.plans = null;
+  public removeTopicsFromCache() {
+    this.topics = null;
   }
 
-  public addPlanToCache(plan:any) {
-    this.plan[plan.slug] = plan;
+  public addTopicToCache(topic:any) {
+    this.topic[topic.id] = topic;
   }
 
-  public getPlanFromCache(slug:string) {
-    return this.plan[slug];
+  public getTopicFromCache(id:string) {
+    return this.topic[id];
   }
 
   public addMissionsToCache(missions:any) {
@@ -136,95 +138,31 @@ export class PublicService extends Service {
   }
 
   public addMissionToCache(mission:any) {
-    this.mission[mission.cid] = mission;
+    this.mission[mission.id] = mission;
   }
 
-  public getMissionFromCache(cid:string) {
-    return this.mission[cid];
-  }
-
-  public async getGoogleSheet() {
-    let start = performance.now();
-    console.log('==> [getGoogleSheet]');
-
-    // Config variables
-    const SPREADSHEET_ID = process.env.REACT_APP_SPREADSHEET_ID;
-    const CLIENT_EMAIL   = process.env.REACT_APP_GOOGLE_CLIENT_EMAIL;
-    const PRIVATE_KEY    = process.env.REACT_APP_GOOGLE_SERVICE_PRIVATE_KEY.replace(/\\n/g, '\n');
-
-    const doc = new GoogleSpreadsheet(SPREADSHEET_ID);
-
-    try {
-      await doc.useServiceAccountAuth({
-        client_email: CLIENT_EMAIL,
-        private_key: PRIVATE_KEY,
-      });
-
-      // loads document properties and worksheets
-      await doc.loadInfo();
-
-      let end = performance.now();
-      console.log(`<== [getGoogleSheet] [${Math.round(end - start)} ms]`);
-
-      return doc;
-    } catch (error) {
-      console.error('Error: ', error);
-      return null;
-    }
-  }
-
-  public async getSheetRows(sheetId: string) {
-    const sheet = Server.GoogleSheet.sheetsById[sheetId];
-    const rows  = await sheet.getRows();
-    return rows;
-  }
-
-  public async addRowToSheet(sheetId: string, row: any) {
-    const sheet = Server.GoogleSheet.sheetsById[sheetId];
-    await sheet.addRow(row);
+  public getMissionFromCache(id:string) {
+    return this.mission[id];
   }
 
   public async downloadFromArweave(url: string) {
-    try {
-      // let start = performance.now();
-      // console.log('==> [downloadFromArweave]');
-
-      let resp = await fetch(url);
-      let data = await resp.json();
-      let content = decodeURIComponent(data.content);
-      content     = BadWords.clean(content);
-
-      // let end = performance.now();
-      // console.log(`<== [downloadFromArweave] [${Math.round(end - start)} ms]`);
-    
-      return content;
-    } catch (error) {
-      return null;
-    }
+    let resp = await fetch(url);
+    let data = await resp.json();
+    let content = decodeURIComponent(data.content);
+    content     = BadWords.clean(content);
+    return content;
   }
 
   /**
    * Upload content (JSON format) to Arweave via Arseeding
-   * @param content JSON format
-   * @returns CID
    */
-  public async uploadToArweave(content: any) {
-    let start = performance.now();
-    console.log('==> [uploadToArweave]');
-
-    const instance = await genAPI(window.ethereum);
-    // const instance = genNodeAPI(process.env.REACT_APP_PRIV_KEY);
-
-    const arseedUrl = 'https://arseed.web3infra.dev';
-    const data = Buffer.from(JSON.stringify(content));
-    const payCurrencyTag = 'ethereum-eth-0x0000000000000000000000000000000000000000'; // everpay supported all tokens
-    const ops = {tags: [{name: "Content-Type", value:'application/json'}]};
-    const res = await instance.sendAndPay(arseedUrl, data, payCurrencyTag, ops);
-
-    let end = performance.now();
-    console.log(`<== [uploadToArweave] [${Math.round(end - start)} ms]`);
-    
-    return res.order.itemId;
+  public async uploadToArweave(params: any, opts: any) {
+    // const instance = await genAPI(window.ethereum);
+    const instance = genNodeAPI(process.env.REACT_APP_PRIV_KEY);
+    const content  = Buffer.from(JSON.stringify(params));
+    const payTag   = ETH_TAG; // everpay supported all tokens
+    const response = await instance.sendAndPay(ARWEAVE_GATEWAY, content, payTag, opts);
+    console.log("--> uploadToArweave", response)
   }
 
   public async uploadToArweaveViaBundlr(content: any) {
@@ -238,5 +176,160 @@ export class PublicService extends Service {
     console.log(`<== [uploadToArweave] [${Math.round(end - start)} ms]`);
     
     return response.id;
+  }
+
+  public async registerUser(address: string) {
+    let result = await this.getProfileFromServer(address);
+    
+    // user is existed
+    if (!result.success) return;
+    if (result.user) {
+      console.log("User is exist.")
+      return result.user;
+    }
+
+    // New user
+    let start = performance.now();
+    console.log('==> [registerUser]');
+
+    const params = {content: encodeURIComponent(JSON.stringify({banner: '', portrait: ''}))};
+    const shortName = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+    const opts = {
+      tags: [
+        { name: "Content-Type", value: "application/json" },
+        { name: "table", value: process.env.REACT_APP_TABLE_USERS },
+        { name: "address", value: address.toLowerCase() },
+        { name: "name", value: shortName },
+        { name: "bio", value: '' },
+        { name: "email", value: '' },
+        { name: "created_at", value: Date.now().toString() },
+        { name: "updated_at", value: Date.now().toString() },
+      ]
+    };
+
+    await Server.public.uploadToArweave(params, opts);
+
+    let end = performance.now();
+    console.log(`<== [registerUser] [${Math.round(end - start)} ms]`);
+
+    let user = {
+      id: address.toLowerCase(),
+      name: shortName,
+      bio: '',
+      email: '',
+      banner: '',
+      portrait: '',
+      created_at: Date.now().toString(),
+      updated_at: Date.now().toString(),
+    }
+
+    return user;
+  }
+
+  public async getUsers() {
+    let start = performance.now();
+    console.log('==> [getUsers]');
+
+    const queryObject = {
+      query:
+      `{
+        transactions (
+          first: 1000
+          tags: [
+            {
+              name: "table",
+              values: ["${process.env.REACT_APP_TABLE_USERS}"]
+            }
+          ]
+        ) {
+          edges {
+            node {
+              id
+              tags {
+                name
+                value
+              }
+            }
+          }
+        }
+      }`
+    };
+
+    try {
+      let response = await fetchGraphQL(queryObject);
+
+      let end = performance.now();
+      console.log(`<== [getUsers] [${Math.round(end - start)} ms]`);
+      
+      return {success: true, response};
+    } catch (error) {
+      console.log("ERR:", error);
+      return {success: false, message: 'getUsers failed.'};
+    }
+  }
+
+  public async getProfileFromServer(address: string) {
+    let start = performance.now();
+    console.log('==> [getProfileFromServer]');
+
+    const queryObject = {
+      query:
+      `{
+        transactions (
+          tags: [
+            {
+              name: "table",
+              values: ["${process.env.REACT_APP_TABLE_USERS}"]
+            }
+            {
+              name: "address",
+              values: ["${address.toLowerCase()}"]
+            }
+          ]
+        ) {
+          edges {
+            node {
+              id
+              tags {
+                name
+                value
+              }
+            }
+          }
+        }
+      }`
+    };
+
+    try {
+      let response = await fetchGraphQL(queryObject);
+
+      let user;
+      if (response.length !== 0) {
+        let res  = await Server.public.downloadFromArweave(ARWEAVE_GATEWAY + response[0].node.id);
+        let imgs = JSON.parse(res);
+        let tags = response[0].node.tags;
+
+        user = {
+          id: tags[2].value,
+          name: tags[3].value,
+          bio: tags[4].value,
+          email: tags[5].value,
+          created_at: tags[6].value,
+          updated_at: tags[7].value,
+          banner: res ? imgs.banner : '',
+          portrait: res ? imgs.portrait : '',
+        }
+        
+        Server.public.addProfileToCache(user);
+      }
+
+      let end = performance.now();
+      console.log(`<== [getProfileFromServer] [${Math.round(end - start)} ms]`);
+      
+      return {success: true, user};
+    } catch (error) {
+      console.log("ERR:", error);
+      return {success: false, message: 'getProfileFromServer failed.'};
+    }
   }
 }

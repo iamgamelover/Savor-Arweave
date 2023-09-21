@@ -174,14 +174,14 @@
   grid-template-columns: 160px 1fr 32px;
 }
 
-.home-page-plan-container {
+.home-page-topic-container {
   border: 1px solid yellow;
   border-radius: 10px;
   padding: 0 10px;
   margin: 15px 0;
 }
 
-.home-page-plan-title {
+.home-page-topic-title {
   font-size: 25px;
   color: yellow;
 }
@@ -250,11 +250,11 @@
     margin: 10px;
   }
 
-  .home-page-plan-margin {
+  .home-page-topic-margin {
     margin: 0 10px;
   }
 
-  .home-page-plan-container {
+  .home-page-topic-container {
     padding: 0;
     margin: 15px 10px;
   }

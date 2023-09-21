@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Server } from '../../server/server';
-import { formatTimestamp, getBannerImage, getPortraitImage, numberWithCommas, randomInteger } from '../util/util';
+import { formatTimestamp, getBannerImage, getPortraitImage, numberWithCommas, uuid } from '../util/util';
 import './HomePage.css';
 import { subscribe } from '../util/event';
 import ActivityPost from '../elements/ActivityPost';
@@ -11,7 +11,7 @@ interface HomePageState {
   posts: any[];
   missions: any[];
   loading: boolean;
-  todayPlan: any;
+  todayTopic: any;
 }
 
 class HomePage extends React.Component<{}, HomePageState> {
@@ -24,7 +24,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       posts: [],
       missions: [],
       loading: false,
-      todayPlan: ''
+      todayTopic: ''
     }
 
     subscribe('wallet-events', () => {
@@ -34,22 +34,22 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   componentDidMount() {
-    window.scrollTo(0, 0);
-    this.getBalance();
-    this.getPlanOfTheDay();
+    // window.scrollTo(0, 0);
+    // this.getBalance();
+    // this.getPlanOfTheDay();
 
-    if (this.filterSelected == 0)
-      this.getHotPosts();
-    else
-      this.getHotMissions();
+    // if (this.filterSelected == 0)
+    //   this.getHotPosts();
+    // else
+    //   this.getHotMissions();
   }
 
-  getPlanOfTheDay() {
-    let plans = Server.public.getPlansFromCache();
+  getTopicOfTheDay() {
+    let topics = Server.public.getTopicsFromCache();
 
-    for (let i = 0; i < plans.length; i++) {
-      if (plans[i].today === '1') {
-        this.setState({ todayPlan: plans[i] });
+    for (let i = 0; i < topics.length; i++) {
+      if (topics[i].today === '1') {
+        this.setState({ todayTopic: topics[i] });
         break;
       }
     }
@@ -115,28 +115,28 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async getHotPosts() {
-    if (this.state.posts.length == 0)
-      this.setState({loading: true});
+    // if (this.state.posts.length == 0)
+    //   this.setState({loading: true});
 
-    let response = await Server.activity.getPosts();
-    if (!response.success) return;
+    // let response = await Server.activity.getPosts();
+    // if (!response.success) return;
 
-    let posts = response.posts;
-    posts = posts.filter((item) => {
-      return item.likes > 0;
-    });
+    // let posts = response.posts;
+    // posts = posts.filter((item) => {
+    //   return item.likes > 0;
+    // });
 
-    // cache profiles
-    let profiles = [];
-    for (let i = 0; i < posts.length; i++) {
-      if (posts[i].author && profiles.indexOf(posts[i].author) == -1)
-        profiles.push(posts[i].author);
-    }
+    // // cache profiles
+    // let profiles = [];
+    // for (let i = 0; i < posts.length; i++) {
+    //   if (posts[i].author && profiles.indexOf(posts[i].author) == -1)
+    //     profiles.push(posts[i].author);
+    // }
 
-    await Server.public.loadProfiles(profiles);
+    // await Server.public.loadProfiles(profiles);
 
-    console.log("hot posts:", posts)
-    this.setState({posts, loading: false});
+    // console.log("hot posts:", posts)
+    // this.setState({posts, loading: false});
   }
 
   renderPosts() {
@@ -159,23 +159,23 @@ class HomePage extends React.Component<{}, HomePageState> {
     return (<div>No hot missions yet.</div>)
   }
   
-  renderTodayPlan() {
-    let data = this.state.todayPlan;
+  renderTodayTopic() {
+    let data = this.state.todayTopic;
     if (!data) return (<div></div>);
     
     return (
-      <NavLink className='plan-card home-page-plan-margin' to={'/plan/' + data.slug}>
-        <div className='plan-card-image-container'>
-          <img className='plan-card-image' src={data.image} />
+      <NavLink className='topic-card home-page-topic-margin' to={'/topic/' + data.id}>
+        <div className='topic-card-image-container'>
+          <img className='topic-card-image' src={data.image} />
         </div>
         <div>
-          <div className='plan-card-header'>
-            <div className='plan-card-publisher'>{data.publisher}</div>
-            <div className='plan-card-summary'>·</div>
-            <div className='plan-card-summary'>{formatTimestamp(data.date, true)}</div>
+          <div className='topic-card-header'>
+            <div className='topic-card-publisher'>{data.publisher}</div>
+            <div className='topic-card-summary'>·</div>
+            <div className='topic-card-summary'>{formatTimestamp(data.date, true)}</div>
           </div>
-          <div className='plan-card-title'>{data.title}</div>
-          <div className='plan-card-summary'>{data.summary}</div>
+          <div className='topic-card-title'>{data.title}</div>
+          <div className='topic-card-summary'>{data.summary}</div>
         </div>
       </NavLink>
     )
@@ -208,15 +208,15 @@ class HomePage extends React.Component<{}, HomePageState> {
 
           {Server.account.isLoggedIn() && this.renderData()}
 
-          <div className='home-page-plan-container'>
+          <div className='home-page-topic-container'>
             <div className='home-page-filter-container'>
-              <div className='home-page-plan-title'>TOPIC OF THE DAY</div>
+              <div className='home-page-topic-title'>TOPIC OF THE DAY</div>
             </div>
 
-            {this.renderTodayPlan()}
+            {this.renderTodayTopic()}
 
             <div className='home-page-filter-container'>
-              <div className='home-page-plan-title'>Dreams On The Way</div>
+              <div className='home-page-topic-title'>Dreams On The Way</div>
             </div>
 
             <div className='home-page-dreams-container'>

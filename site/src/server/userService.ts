@@ -1,5 +1,6 @@
+import { genNodeAPI } from 'arseeding-js';
 import { AppConfig } from '../app/AppConfig';
-import { ARWEAVE_GATEWAY, USERS_SHEET_ID } from '../app/util/consts';
+import { ARWEAVE_GATEWAY, ETH_TAG } from '../app/util/consts';
 import { Server } from './server';
 import { Service, ServiceResponse } from './service';
 import { ethers } from 'ethers';
@@ -7,7 +8,8 @@ import { ethers } from 'ethers';
 const contractABI = require('../app/data/SavorERC20.json');
 
 export class UserService extends Service {
-  protected user: any;
+  // protected user: any;
+  public user: any;
 
   constructor() {
     super();
@@ -19,68 +21,14 @@ export class UserService extends Service {
   }
   
   public async sync(): Promise<ServiceResponse> {
-    let id;
+    let address;
     if (Server.account.isMetamaskLoggedIn())
-      id = Server.account.getMetamaskAccount();
+      address = Server.account.getMetamaskAccount();
     else
-      id = Server.account.getWallet();
+      address = Server.account.getWallet();
 
-    let shortName = id.substring(0, 6) + '...' + id.substring(id.length - 4);
-
-    let response = await this.getProfileFromServer(id);
-
-    if (!response.user) {
-      let params = {
-        id: id,
-        name: shortName,
-        slug: '',
-        banner: '',
-        portrait: '',
-        bio: '',
-        email: '',
-      };
-
-      let response = await this.createProfile(params);
-      if(!response.success)
-        return {success: false};
-
-      this.user = params;
-      return {success: true};
-    }
-
-    this.user = response.user;
+    this.user = await Server.public.registerUser(address);
     return {success: true};
-  }
-
-  public async createProfile(params: any) {
-    try {
-      let start = performance.now();
-      console.log('==> [createProfile]');
-
-      // const cid = await Server.public.uploadToIPFS(params);
-
-      const row = {
-        ID: params.id,
-        Name: params.name,
-        Slug: params.slug,
-        Bio: params.bio,
-        Email: params.email,
-        Banner: params.banner,
-        Portrait: params.portrait,
-        Date: Date.now() / 1000,
-      };
-  
-      await Server.public.addRowToSheet(USERS_SHEET_ID, row);
-
-      let end = performance.now();
-      console.log(`<== [createProfile] [${Math.round(end - start)} ms]`);
-      
-      return {success: true};
-
-    } catch (error: any) {
-      console.error("ERR:", error);
-      return {success: false, message: 'Failed: [createProfile]'};
-    }
   }
 
   public async updateProfile(params: any) {
@@ -88,78 +36,32 @@ export class UserService extends Service {
       let start = performance.now();
       console.log('==> [updateProfile]');
 
-      let rows = await Server.public.getSheetRows(USERS_SHEET_ID);
+      const data = {content: encodeURIComponent(JSON.stringify({banner: params.banner, portrait: params.portrait}))};
+      const ops = {
+        tags: [
+          { name: "Content-Type", value: "application/json" },
+          { name: "table", value: process.env.REACT_APP_TABLE_USERS },
+          { name: "address", value: params.id },
+          { name: "name", value: params.name },
+          { name: "bio", value: params.bio },
+          { name: "email", value: params.email },
+          { name: "created_at", value: params.created_at },
+          { name: "updated_at", value: Date.now().toString() },
+        ]
+      };
 
-      for (let i = 0; i < rows.length; i++) {
-        if (params.id == rows[i].ID) {
-          rows[i].Name     = params.name;
-          rows[i].Bio      = params.bio;
-          rows[i].Banner   = params.banner;
-          rows[i].Portrait = params.portrait;
+      await Server.public.uploadToArweave(data, ops);
 
-          await rows[i].save();
-
-          this.user.name        = params.name;
-          this.user.bio         = params.bio;
-          this.user.portrait    = params.portraitBase64;
-          this.user.portraitURL = params.portrait;
-          this.user.banner      = params.bannerBase64;
-          this.user.bannerURL   = params.banner;
-          this.notifyListeners('user-profile-updated');
-          break;
-        }
-      }
+      this.user = params;
+      this.notifyListeners('user-profile-updated');
 
       let end = performance.now();
       console.log(`<== [updateProfile] [${Math.round(end - start)} ms]`);
       
       return {success: true};
-
     } catch (error: any) {
       console.error("ERR:", error);
       return {success: false, message: 'Failed: [updateProfile]'};
-    }
-  }
-
-  public async getProfileFromServer(id: string) {
-    try {
-      let start = performance.now();
-      console.log('==> [getProfileFromServer]');
-
-      let user;
-      let rows = await Server.public.getSheetRows(USERS_SHEET_ID);
-
-      for (let i = 0; i < rows.length; i++) {
-        if (id == rows[i].ID) {
-          let portrait = await Server.public.downloadFromArweave(rows[i].Portrait);
-          let banner   = await Server.public.downloadFromArweave(rows[i].Banner);
-
-          user = {
-            id: rows[i].ID,
-            name: rows[i].Name,
-            slug: rows[i].Slug,
-            banner: banner,
-            bannerURL: rows[i].Banner,
-            portrait: portrait,
-            portraitURL: rows[i].Portrait,
-            bio: rows[i].Bio,
-            email: rows[i].Email,
-            date: rows[i].Date,
-          }
-
-          Server.public.addProfileToCache(user);
-          break;
-        }
-      }
-  
-      let end = performance.now();
-      console.log(`<== [getProfileFromServer] [${Math.round(end - start)} ms]`);
-      
-      return {success: true, user};
-
-    } catch (error: any) {
-      console.error("ERR:", error);
-      return {success: false, message: 'Failed: [getProfileFromServer]'};
     }
   }
 
@@ -184,10 +86,10 @@ export class UserService extends Service {
     return this.user.name;
   }
 
-  public getSlug(): string {
+  public getEmail(): string {
     if(!this.user)
       return '';
-    return this.user.slug;
+    return this.user.email;
   }
 
   public getBanner(): string {
@@ -220,6 +122,12 @@ export class UserService extends Service {
     return this.user.bio;
   }
 
+  public getCreatedAt(): string {
+    if(!this.user)
+      return '';
+    return this.user.created_at;
+  }
+
   public getProfile():any {
     if(!this.user)
       return null;
@@ -227,13 +135,14 @@ export class UserService extends Service {
     return {
       id: this.user.id,
       name: this.user.name,
-      slug: this.user.slug,
       banner: this.user.banner,
       portrait: this.user.portrait,
-      bio: this.user.bio
+      bio: this.user.bio,
+      email: this.user.email,
+      created_at: this.user.created_at,
+      updated_at: this.user.updated_at,
     }
   }
-
 
   // assets
   public getTokenCount(): number {

@@ -28,8 +28,8 @@ export class AppConfig {
     },
     {
       text: 'Topics',
-      icon: 'plans',
-      to: '/plans',
+      icon: 'topics',
+      to: '/topics',
       loggedIn: false
     },
     {

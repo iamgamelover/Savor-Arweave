@@ -51,17 +51,23 @@ class LoginModal extends React.Component<LoginModalProps, LoginModalState> {
       const address  = accounts[0];
       console.log("[ address ]", address);
 
-      localStorage.setItem('metamask', address);
-      LoginModal.subscribeMetaMaskEvents();
-
-      Server.web3 = new Web3(window.ethereum);
       this.props.onClose();
-      await Server.user.sync();
-      await Server.initArweave();
-      publish('wallet-events');
-
+      LoginModal.initUser(address);
     } catch (error: any) {
       this.setState({ alert: error.message });
+    }
+  }
+
+  static async initUser(address: string) {
+    localStorage.setItem('metamask', address);
+    Server.web3 = new Web3(window.ethereum);
+
+    try {
+      let user = await Server.public.registerUser(address);
+      Server.user.user = user;
+      publish('wallet-events');
+    } catch (error) {
+      console.log("ERR:", error);
     }
   }
 
@@ -71,10 +77,21 @@ class LoginModal extends React.Component<LoginModalProps, LoginModalState> {
   
       ethereum.on('accountsChanged', (accounts: string[]) => {
         console.log("[ accountsChanged ]", accounts);
+
+        // It's meaning that the user is logged out.
         if (accounts.length === 0) {
           localStorage.removeItem('metamask');
           publish('wallet-events');
         }
+
+        // Switch to a new user.
+        else
+          LoginModal.initUser(accounts[0]);
+      });
+  
+      ethereum.on('chainChanged', (chainId: string) => {
+        console.log("chainChanged", chainId);
+        publish('wallet-events');
       });
     } catch (error) {
       console.error(error);

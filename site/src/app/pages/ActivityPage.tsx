@@ -7,8 +7,8 @@ import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
-import { POSTS_SHEET_ID } from '../util/consts';
 import { subscribe } from '../util/event';
+import { TIPS_ARWEAVE } from '../util/consts';
 
 export function checkContent(quillRef: any, wordCount: number) {
   // console.log('wordCount', wordCount)
@@ -73,7 +73,7 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
     let position = Server.public.getPositionFromCache();
 
     if (posts) {
-      this.setState({posts: posts});
+      this.setState({posts});
       setTimeout(() => {
         let div = document.getElementById('id-app-page');
         div.scrollTo(0, position);
@@ -106,8 +106,6 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
 
     await Server.public.loadProfiles(profiles);
 
-    console.log('posts: ', posts)
-
     this.setState({ posts, loading: false });
     Server.public.addPostsToCache(posts);
   }
@@ -128,12 +126,7 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
 
     if (response.success) {
       this.quillRef.setText('');
-      this.setState({message: ''});
-
-      if (this.state.category == 'community')
-        this.getPosts('community');
-      else if (this.state.category == 'user')
-        this.getPosts('user');
+      this.setState({message: '', alert: TIPS_ARWEAVE});
     }
     else
       this.setState({message: '', alert: response.message})

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BsCheckLg, BsExclamationOctagonFill, BsFillImageFill, BsFillXCircleFill } from 'react-icons/bs';
 import { Server } from '../../server/server';
-import { getBannerImage, getPortraitImage } from '../util/util';
+import { getBannerImage, getPortraitImage, isValidEmail } from '../util/util';
 import './Modal.css'
 import './EditProfileModal.css'
 import MessageModal from './MessageModal';
@@ -20,8 +20,9 @@ interface EditProfileModalState {
   banner: string;
   portrait: string;
   name: string;
-  slug: string;
+  email: string;
   bio: string;
+  created_at: string;
   message: string;
   alert: string;
   openBannerList: boolean;
@@ -41,8 +42,9 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       banner: '',
       portrait: '',
       name: '',
-      slug: '',
+      email: '',
       bio: '',
+      created_at: '',
       message: '',
       alert: '',
       openBannerList: false,
@@ -54,7 +56,7 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     this.onOpenPortraitList = this.onOpenPortraitList.bind(this);
     this.onClosePortraitList = this.onClosePortraitList.bind(this);
     this.onChangeName = this.onChangeName.bind(this);
-    this.onChangeSlug = this.onChangeSlug.bind(this);
+    this.onChangeEmail = this.onChangeEmail.bind(this);
     this.onChangeBio = this.onChangeBio.bind(this);
     this.onSaveProfile = this.onSaveProfile.bind(this);
     this.onClose = this.onClose.bind(this);
@@ -72,8 +74,9 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       banner: Server.user.getBanner(),
       portrait: Server.user.getPortrait(),
       name: Server.user.getName(),
-      slug: Server.user.getSlug(),
+      email: Server.user.getEmail(),
       bio: Server.user.getBio(),
+      created_at: Server.user.getCreatedAt(),
       message: '',
       alert: '',
       openBannerList: false,
@@ -103,8 +106,8 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     this.setState({name: e.currentTarget.value});
   }
 
-  onChangeSlug(e:any) {
-    this.setState({slug: e.currentTarget.value});
+  onChangeEmail(e:any) {
+    this.setState({email: e.currentTarget.value});
   }
 
   onChangeBio(e:any) {
@@ -114,8 +117,8 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
   async onSaveProfile() {
     let dirty = false;
     if(this.state.name != Server.user.getName()) dirty = true;
+    // if(this.state.email != Server.user.getEmail()) dirty = true;
     if(this.state.bio != Server.user.getBio()) dirty = true;
-    // if(this.state.slug != Server.user.getSlug()) dirty = true;
     if(this.state.banner != Server.user.getBanner()) dirty = true;
     if(this.state.portrait != Server.user.getPortrait()) dirty = true;
 
@@ -132,69 +135,31 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     if(this.state.name.length > 32) 
       errorMsg = 'Name must be at most 32 characters.';
   
-    // if(this.state.slug.length < 3) 
-    //   errorMsg = 'Handle must be at least 3 characters.';
-
-    // if(this.state.slug.length > 32) 
-    //   errorMsg = 'Handle must be at most 32 characters.';
-  
-    // if(this.state.slug.indexOf('--') != -1) 
-    //   errorMsg = 'Handle cannot contain consecutive dash (-) characters.';
-      
-    // let re = /^[a-zA-Z0-9-]+$/;
-    // if(!re.test(this.state.slug)) 
-    //   errorMsg = 'Handle may only contain a-z, A-Z, 0-9, and dash (-) characters.';
+    // if(!isValidEmail(this.state.email)) 
+    //   errorMsg = 'Email invalid.';
 
     if(errorMsg != '') {
       this.setState({alert: errorMsg});        
       return;
     }
 
-    // let slugChanged = (this.state.slug != Server.user.getSlug());
-
     this.setState({message: 'Saving profile...'});
-
-    let portrait = '', banner = '';
-    try {
-      if (this.state.portrait != Server.user.getPortrait()) {
-        let cid  = await Server.public.uploadToArweave({content: this.state.portrait});
-        portrait = ARWEAVE_GATEWAY + cid;
-      }
-      else
-        portrait = Server.user.getPortraitURL();
-  
-      if (this.state.banner != Server.user.getBanner()) {
-        let cid = await Server.public.uploadToArweave({content: this.state.banner});
-        banner = ARWEAVE_GATEWAY + cid;
-      }
-      else
-        banner = Server.user.getBannerURL();
-      
-    } catch (error) {
-      // console.log('ERR-->',error)
-      this.setState({message: '', alert: 'Not enough funds to send data.'});
-      return;
-    }
-
-    // console.log('portrait',portrait)
-    // console.log('banner',banner)
 
     setTimeout(async () => {
       let params = {
         id: window.location.pathname.substring(9),
         name: this.state.name,
-        banner: banner,
-        portrait: portrait,
-        portraitBase64: this.state.portrait,
-        bannerBase64: this.state.banner,
+        email: this.state.email,
+        banner: this.state.banner,
+        portrait: this.state.portrait,
         bio: this.state.bio,
+        created_at: this.state.created_at,
       };
 
       let response = await Server.user.updateProfile(params);
       
       if(response.success) {
         this.setState({message: ''});
-        // let newSlug = slugChanged ? this.state.slug : null;
         this.props.onClose();
       }
       else {

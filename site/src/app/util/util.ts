@@ -90,6 +90,19 @@ export function uniqueId() {
 }
 
 /**
+ * Gets a uuid.
+ * @returns the unique uuid
+ */
+export function uuid() {
+  var str = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+  return str.replace(/[xy]/g, function(c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/**
  * Generate a random number between min and max, including both min and max.
  * @param min 
  * @param max 
@@ -183,7 +196,7 @@ export function convertSlug(str: string):any {
 export function convertHashTag(str: string):any {
   const pattern = /#\w+(-\w+)*/g;
   str = str.replace(pattern, function (hashtag) {
-    return `<a className='activity-page-slug-link' href='/plan/${hashtag.substring(1)}' id="url-${hashtag}">${hashtag}</a>`;
+    return `<a className='activity-page-slug-link' href='/topic/${hashtag.substring(1)}' id="url-${hashtag}">${hashtag}</a>`;
   });
 
   return str;
@@ -236,7 +249,7 @@ export function isValidUrl(url: string) {
   return pattern.test(url);
 }
 
-// find the first image in the plan content
+// find the first image in the topic content
 export function getFirstImage(content: any) {
   let image = '';
   let start = content.indexOf('<img');
@@ -321,4 +334,28 @@ export function browserDetect() {
   }
 
   return browserName;
+}
+
+export function isValidEmail(email: string) {
+  var pattern = /^[a-zA-Z0-9-]+(.[a-zA-Z0-9_-]+)@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+).[a-zA-Z]{2,6}$/;
+  return pattern.test(email);
+}
+
+export async function fetchGraphQL(queryObject: any) {
+  const response = await fetch('https://arweave.net/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Authorization': 'Bearer YOUR_TOKEN',
+    },
+    body: JSON.stringify(queryObject),
+  });
+
+  const data = await response.json();
+  // console.log("==> data:", data)
+  return data.data.transactions.edges;
+}
+
+export function capitalizeFirstLetter(str: string) {
+  return str.replace(/^\w/, c => c.toUpperCase());
 }

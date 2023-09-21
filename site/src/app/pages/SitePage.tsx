@@ -9,14 +9,6 @@ import LoginModal from '../modals/LoginModal';
 const HeaderBarWithRouter = withRouter(HeaderBar);
 
 class SitePage extends React.Component {
-
-  componentDidMount(): void {
-    LoginModal.subscribeMetaMaskEvents();
-    subscribe('wallet-events', () => {
-      this.forceUpdate();
-    });
-  }
-
   render() {
     if (!localStorage.getItem('welcomed'))
       return <Navigate to="/welcome" replace />;

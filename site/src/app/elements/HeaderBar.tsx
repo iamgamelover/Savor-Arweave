@@ -40,6 +40,11 @@ class HeaderBar extends React.Component<HeaderBarProps, HeaderBarState> {
     this.closeLogin = this.closeLogin.bind(this);
     this.onPopState = this.onPopState.bind(this);
     this.onUserProfileUpdated = this.onUserProfileUpdated.bind(this);
+
+    subscribe('wallet-events', () => {
+      this.forceUpdate();
+      // this.checkChain();
+    });
   }
 
   componentDidMount() {
@@ -106,8 +111,8 @@ class HeaderBar extends React.Component<HeaderBarProps, HeaderBarState> {
       pageName = 'Home';
     else if(path.indexOf('/profile/') == 0)
       pageName = 'Profile';
-    else if(path.indexOf('/chat/') == 0)
-      pageName = 'Chat';
+    else if(path.indexOf('/topic/') == 0)
+      pageName = 'Topic';
     else if(path.indexOf('/activity/post/') == 0)
       pageName = 'View Activity';
     else if(path.indexOf('/mission/') == 0)

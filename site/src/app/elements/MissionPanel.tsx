@@ -1,6 +1,6 @@
 import React from 'react';
-import { BsChat, BsFillAwardFill, BsHeart, BsHeartFill } from 'react-icons/bs';
-import { convertHashTag, convertSlug, convertUrls, numberWithCommas } from '../util/util';
+import { BsChat, BsCoin, BsFillAwardFill, BsHeart, BsHeartFill } from 'react-icons/bs';
+import { capitalizeFirstLetter, convertHashTag, convertSlug, convertUrls, numberWithCommas } from '../util/util';
 import { Server } from '../../server/server';
 import { formatTimestamp } from '../util/util';
 import './MissionPanel.css';
@@ -17,8 +17,6 @@ interface MissionPanelProps {
 }
 
 interface MissionPanelState {
-  likes: number;
-  liked: boolean;
   openImage: boolean;
   navigate: string;
 }
@@ -45,8 +43,6 @@ class MissionPanel extends React.Component<MissionPanelProps, MissionPanelState>
     // this.id = post.id;
 
     this.state = {
-      likes: data.likes,
-      liked: false,
       openImage: false,
       navigate: ''
     };
@@ -78,40 +74,6 @@ class MissionPanel extends React.Component<MissionPanelProps, MissionPanelState>
     this.setState({openImage: true})
   }
 
-  async onLike(e: any) {
-    e.stopPropagation();
-
-    if (this.loading) return;
-    this.loading = true;
-
-    let num = this.state.likes;
-    if (this.state.liked)
-      num -= 1;
-    else
-      num += 1;
-
-    this.setState({
-      likes: num,
-      liked: !this.state.liked
-    })
-
-    let response;
-    if (this.state.liked)
-      response = await Server.activity.likePost(this.id, false);
-    else
-      response = await Server.activity.likePost(this.id, true);
-
-    if (!response.success) {
-      num -= 1;
-      this.setState({
-        likes: num,
-        liked: !this.state.liked
-      })
-    }
-    
-    this.loading = false;
-  }
-
   goProfilePage(e: any, slug: string) {
     e.stopPropagation();
     if (window.location.pathname.indexOf('/profile/') == 0)
@@ -134,6 +96,10 @@ class MissionPanel extends React.Component<MissionPanelProps, MissionPanelState>
     this.setState({openImage: false});
   }
 
+  onCoins(e: any) {
+    e.stopPropagation();
+  }
+
   renderActionsRow(data: any) {
     return (
       <div className='mission-panel-action-row'>
@@ -142,22 +108,30 @@ class MissionPanel extends React.Component<MissionPanelProps, MissionPanelState>
             <BsChat />
           </div>
           <div className='mission-panel-action-number'>
-            {typeof(data.replies) == 'number' 
-              ? numberWithCommas(data.replies)
-              : data.replies.length
-            }
+            {numberWithCommas(data.doing)}
           </div>
         </div>
 
-        <div className='mission-panel-action' onClick={(e)=>this.onLike(e)}>
+        <div className='mission-panel-action' onClick={(e)=>this.onCoins(e)}>
           <div className='mission-panel-action-icon'>
-            {this.state.liked 
-              ? <BsHeartFill color='red' />
-              : <BsHeart />
-            }
+            <BsCoin />
           </div>
           <div className='mission-panel-action-number'>
-            {numberWithCommas(this.state.likes)}
+            {numberWithCommas(Number(data.coins))}
+          </div>
+        </div>
+
+        <div className='mission-panel-action'>
+          <img style={{width:'20px', height:'20px', marginRight: '5px'}} src='/coin.png' />
+          <div className='mission-panel-action-number'>
+            {numberWithCommas(Number(data.award))}
+          </div>
+        </div>
+
+        <div className='mission-panel-action'>
+          <img style={{width:'22px', height:'22px', marginRight: '5px'}} src='/icon/plant.png' />
+          <div className='mission-panel-action-number'>
+            {capitalizeFirstLetter(data.dream)}
           </div>
         </div>
       </div>
@@ -166,7 +140,7 @@ class MissionPanel extends React.Component<MissionPanelProps, MissionPanelState>
 
   render() {
     let data = this.props.data;
-    let date = formatTimestamp(data.date, true);
+    let date = formatTimestamp(data.block_timestamp, true);
     let content = convertHashTag(data.content);
     content     = convertUrls(content);
 
@@ -176,20 +150,11 @@ class MissionPanel extends React.Component<MissionPanelProps, MissionPanelState>
     return (
       <div
         style={{cursor: this.state.openImage || this.props.isReply || this.props.isResource ? 'auto' : 'pointer'}}
-        onClick={()=>this.goMissionPage(data.cid)}
+        onClick={()=>this.goMissionPage(data.id)}
       >
         <div className='mission-panel-row-header'>
           {date}
           
-          {!this.props.isResource &&
-            <div style={{display: 'flex', alignItems: 'center'}}>
-              <img style={{width:'20px', height:'20px', marginRight: '5px'}} src='/coin.png' />
-              <div>{data.award}</div>
-              <div style={{width:'20px'}} />
-              <img style={{width:'22px', height:'22px', marginRight: '5px'}} src='/icon/plant.png' />
-              <div>{data.career}</div>
-            </div>
-          }
         </div>
 
         <div className="mission-panel-row">

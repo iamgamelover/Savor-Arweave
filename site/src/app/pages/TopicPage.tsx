@@ -1,5 +1,5 @@
 import React from 'react';
-import './PlanPage.css'
+import './TopicPage.css'
 import { Server } from '../../server/server';
 import { BsCalendarWeek } from 'react-icons/bs';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
@@ -10,11 +10,11 @@ import MessageModal from '../modals/MessageModal';
 import parse, { attributesToProps } from 'html-react-parser';
 import ViewImageModal from '../modals/ViewImageModal';
 import { numberWithCommas } from '../util/util';
-import MissionPanel from '../elements/MissionPanel';
 import { subscribe } from '../util/event';
+import { TIPS_ARWEAVE } from '../util/consts';
 
-interface PlanPageState {
-  plan: any;
+interface TopicPageState {
+  topic: any;
   posts: any[];
   missions: any[];
   message: string;
@@ -24,12 +24,12 @@ interface PlanPageState {
   openEditor: boolean;
   showMoreDesc: boolean;
   balance: string;
-  award: number;
-  career: string;
+  award: string;
+  dream: string;
 }
 
-class PlanPage extends React.Component<{}, PlanPageState> {
-  isActivity = true;
+class TopicPage extends React.Component<{}, TopicPageState> {
+  isActivity = false;
   quillRef: any;
   wordCount = 0;
   imgUrl: string;
@@ -46,7 +46,7 @@ class PlanPage extends React.Component<{}, PlanPageState> {
   constructor(props: any) {
     super(props);
     this.state = {
-      plan: '',
+      topic: '',
       posts: [],
       missions: [],
       message: '',
@@ -56,14 +56,14 @@ class PlanPage extends React.Component<{}, PlanPageState> {
       openEditor: false,
       showMoreDesc: false,
       balance: '',
-      award: 1,
-      career: 'community',
+      award: '1',
+      dream: 'explorer',
     }
 
     this.onContentChange = this.onContentChange.bind(this);
     this.onAwardChange = this.onAwardChange.bind(this);
     this.onClose = this.onClose.bind(this);
-    this.onCareerChange = this.onCareerChange.bind(this);
+    this.onDreamChange = this.onDreamChange.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -71,12 +71,12 @@ class PlanPage extends React.Component<{}, PlanPageState> {
   }
 
   componentDidMount() {
-    this.getPlan();
+    this.getTopic();
 
     if (this.isActivity)
       this.getPosts();
     else
-      this.getMissions();
+      this.getMissionsOfTopic();
   }
 
   tapImage(e: any, src: string) {
@@ -97,39 +97,40 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     this.setState({award: e.currentTarget.value});
   }
 
-  onCareerChange(e: React.FormEvent<HTMLSelectElement>) {
+  onDreamChange(e: React.FormEvent<HTMLSelectElement>) {
     const element = e.target as HTMLSelectElement;
-    this.setState({career: element.value});
+    this.setState({dream: element.value});
   }
 
-  async getPlan() {
-    let slug = window.location.pathname.substring(6);
-    let plan = Server.public.getPlanFromCache(slug);
-    console.log("plan:", plan)
+  async getTopic() {
+    let id    = window.location.pathname.substring(7);
+    let topic = Server.public.getTopicFromCache(id);
+    console.log("topic:", topic)
 
-    if (!plan) {
-      let response = await Server.plans.getPlan(slug);
+    if (!topic) {
+      let response = await Server.topic.getTopic(id);
       if (!response.success) return;
-      plan = response.plan;
+      topic = response.topic;
     }
 
-    this.setState({plan});
+    this.setState({topic});
   }
 
   async getPosts() {
     if (this.state.posts.length == 0)
       this.setState({loading: true});
 
-    let tags     = window.location.pathname.substring(6);
+    let id       = window.location.pathname.substring(7);
     let response = await Server.activity.getPosts();
     if (!response.success) return;
 
     let posts = response.posts;
     posts = posts.filter((item) => {
-      return item.tags == tags;
+      return item.topic_id == id;
     });
 
-    console.log('PLAN: posts ->: ', posts)
+    console.log('topic posts ->: ', posts)
+    this.setState({ posts, loading: false });
 
     // cache profiles
     let profiles = [];
@@ -139,10 +140,9 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     }
 
     await Server.public.loadProfiles(profiles);
-    this.setState({ posts, loading: false });
   }
 
-  async getMissions() {
+  async getMissionsOfTopic() {
     if (this.state.missions.length == 0)
       this.setState({loading: true});
       
@@ -150,11 +150,11 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     // console.log("balance:", balance)
     // this.setState({balance});
 
-    // let slug     = window.location.pathname.substring(6);
-    let response = await Server.plans.getMissions(this.state.plan.title);
+    let id = window.location.pathname.substring(7);
+    let response = await Server.topic.getMissionsOfTopic(id);
     if (!response.success) return;
 
-    console.log('PLAN: missions ->: ', response.missions)
+    console.log('missions ->: ', response.missions)
     this.setState({ missions: response.missions, loading: false });
   }
 
@@ -165,7 +165,7 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     this.isActivity = filter;
     // this.posLodMore = 0;
 
-    // sessionStorage.setItem('plan-filter', this.isActivity.toString());
+    // sessionStorage.setItem('topic-filter', this.isActivity.toString());
 
     if (this.isActivity) {
       this.setState({posts: [], openEditor: false});
@@ -176,23 +176,23 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     else {
       this.setState({missions: [], openEditor: false});
       setTimeout(() => {
-        this.getMissions();
+        this.getMissionsOfTopic();
       }, 10);
     }
   }
 
   renderAward() {
     return (
-      <div className="plan-page-input-container">
-        <div className="plan-page-section-row">
+      <div className="topic-page-input-container">
+        <div className="topic-page-section-row">
           <div>Balance</div>
           <div style={{textAlign: 'right', marginRight: '8px'}}>{numberWithCommas(Number(this.state.balance))}</div>
           <img style={{width:'30px', marginTop: '4px'}} src='/coin.png' />
         </div>
 
-        <div className="plan-page-section-row">
+        <div className="topic-page-section-row">
           <div>Award</div>
-          <div className='plan-page-award-input'>
+          <div className='topic-page-award-input'>
             x&nbsp;&nbsp;
             <input
               style={{width: '50px', textAlign: 'right'}} 
@@ -206,22 +206,23 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     )
   }
 
-  renderCareer() {
+  renderDream() {
     return (
-      <div className="plan-page-input-container">
-        <div className="plan-page-section-career">
+      <div className="topic-page-input-container">
+        <div className="topic-page-section-career">
           <div style={{display: 'flex', alignItems: 'center'}}>
             <img style={{width:'28px', marginRight: '10px'}} src='/icon/career.png' />
-            <div>Career</div>
+            <div>Dream</div>
           </div>
           <select
             className="activity-page-filter" 
-            value={this.state.career} 
-            onChange={this.onCareerChange}
+            value={this.state.dream} 
+            onChange={this.onDreamChange}
           >
-            <option value="botanist">Botanist</option>
-            <option value="astronaut">Astronaut</option>
-            <option value="rocket-designer">Rocket Designer</option>
+            <option value="Explorer">Explorer</option>
+            <option value="Singer">Singer</option>
+            <option value="Runner">Runner</option>
+            <option value="Director">Director</option>
           </select>
         </div>
       </div>
@@ -231,7 +232,7 @@ class PlanPage extends React.Component<{}, PlanPageState> {
   renderEditor(isActivity: boolean) {
     return (
       <div>
-        <div className="plan-page-input-container">
+        <div className="topic-page-input-container">
           <SharedQuillEditor 
             placeholder = {isActivity ? 'Whats happening?' : 'Whats the new mission?'}
             onChange={this.onContentChange}
@@ -242,14 +243,14 @@ class PlanPage extends React.Component<{}, PlanPageState> {
         {!isActivity && 
           <div>
             {this.renderAward()}
-            {this.renderCareer()}
+            {this.renderDream()}
           </div>
         }
 
-        <div className='plan-page-actions'>
+        <div className='topic-page-actions'>
           {isActivity
             ?  <button onClick={()=>this.onPost()}>Post</button>
-            :  <button onClick={()=>this.onMission()}>Publish</button>
+            :  <button onClick={()=>this.onMission()}>Launch</button>
           }
         </div>
       </div>
@@ -273,7 +274,7 @@ class PlanPage extends React.Component<{}, PlanPageState> {
 
     let divs = [];
     for (let i = 0; i < this.state.missions.length; i++)
-      divs.push(<MissionPanel key={i} data={this.state.missions[i]} />);
+      divs.push(<ActivityPost key={i} data={this.state.missions[i]} isMission={true} />);
 
     return divs.length > 0 ? divs : <div>No missions yet.</div>
   }
@@ -289,7 +290,7 @@ class PlanPage extends React.Component<{}, PlanPageState> {
 
     let html   = this.quillRef.root.innerHTML;
     let params = {
-      hashtag: this.state.plan.slug,
+      topicId: this.state.topic.id,
       content: encodeURIComponent(html)
     };
 
@@ -297,8 +298,8 @@ class PlanPage extends React.Component<{}, PlanPageState> {
 
     if (response.success) {
       this.quillRef.setText('');
-      this.setState({message: ''});
-      this.getPosts();
+      this.setState({message: '', alert: TIPS_ARWEAVE});
+      // this.getPosts();
     }
     else
       this.setState({message: '', alert: response.message})
@@ -316,18 +317,16 @@ class PlanPage extends React.Component<{}, PlanPageState> {
     let html   = this.quillRef.root.innerHTML;
     let params = {
       award: this.state.award,
-      career: this.state.career,
-      planCid: this.state.plan.cid,
-      planTitle: this.state.plan.title,
+      dream: this.state.dream,
+      topicId: this.state.topic.id,
       content: encodeURIComponent(html)
     };
 
-    let response = await Server.plans.createMission(params);
+    let response = await Server.topic.createMission(params);
 
     if (response.success) {
       this.quillRef.setText('');
-      this.setState({message: ''});
-      this.getMissions();
+      this.setState({message: '', alert: TIPS_ARWEAVE});
     }
     else
       this.setState({message: '', alert: response.message})
@@ -342,68 +341,70 @@ class PlanPage extends React.Component<{}, PlanPageState> {
   }
 
   render() {
-    if (!this.state.plan) 
-      return (<div>Loading...</div>);
+    if (!this.state.topic) 
+      return (<div className='topic-page-loading'>Loading...</div>);
 
-    let plan = this.state.plan;
-    let date = new Date(plan.date * 1000).toLocaleString();
+    let topic = this.state.topic;
+    let date  = new Date(Number(topic.block_timestamp * 1000)).toLocaleString();
 
     return (
-      <div className='plan-page'>
-        <div className='plan-page-header'>
-          <img className="plan-page-banner" src={plan.banner} />
-          <img className="plan-page-portrait" src={plan.image} />
+      <div className='topic-page'>
+        <div className='topic-page-header'>
+          <img className="topic-page-banner" src={topic.banner} />
+          <img className="topic-page-portrait" src={topic.image} />
         </div>
 
-        <div className="plan-page-title">{plan.title}</div>
-        <div className="plan-page-desc">{plan.summary}</div>
-        <div className="plan-page-desc-more" onClick={()=>this.onShowMoreDesc()}>
+        <div className="topic-page-title">{topic.title}</div>
+        <div className="topic-page-desc">{topic.summary}</div>
+        <div className="topic-page-desc-more" onClick={()=>this.onShowMoreDesc()}>
           {this.state.showMoreDesc ? 'Show less' : 'Show more'}
         </div>
         
         {this.state.showMoreDesc &&
-          <div className='plan-page-desc-more-panel'>
-            {parse(plan.content, this.parseOptions)}
+          <div className='topic-page-desc-more-panel'>
+            {parse(topic.content, this.parseOptions)}
           </div>
         }
 
-        <div className="plan-page-publisher">@{plan.publisher}</div>
-        <div className='plan-page-joined-container'>
+        <div className="topic-page-publisher">@{topic.publisher}</div>
+        <div className='topic-page-joined-container'>
           <BsCalendarWeek color='white'/>
-          <div className='plan-page-joined'>Launched {date}</div>
+          <div className='topic-page-joined'>Launched {date}</div>
         </div>
 
-        {/* <div className='plan-page-follow-container'>
-          <div className="plan-page-follow-link" onClick={() => this.openUserList('following')}>
+        {/* <div className='topic-page-follow-container'>
+          <div className="topic-page-follow-link" onClick={() => this.openUserList('following')}>
             {this.state.following.length} Following
           </div>
-          <div className="plan-page-follow-link" onClick={() => this.openUserList('followers')}>
+          <div className="topic-page-follow-link" onClick={() => this.openUserList('followers')}>
             {this.state.followers.length} Followers
           </div>
         </div> */}
 
-        <div className='plan-page-social-container'>
-          <div className='plan-page-social-header'>
+        <div className='topic-page-social-container'>
+          <div className='topic-page-social-header'>
             <div style={{display: 'flex'}}>
-              <div className={`plan-page-filter ${this.isActivity ? 'selected' : ''}`} onClick={()=>this.onFilter(true)}>
+              <div className={`topic-page-filter ${this.isActivity ? 'selected' : ''}`} onClick={()=>this.onFilter(true)}>
                 Activity
               </div>
-              <div className={`plan-page-filter ${this.isActivity ? '' : 'selected'}`} onClick={()=>this.onFilter(false)}>
+              <div className={`topic-page-filter ${this.isActivity ? '' : 'selected'}`} onClick={()=>this.onFilter(false)}>
                 Missions
               </div>
             </div>
 
-            <button onClick={()=>this.setState({openEditor: !this.state.openEditor})}>
-              {this.state.openEditor ? 'Cancel' : 'New'}
-            </button>
+            {Server.account.isLoggedIn() &&
+              <button onClick={()=>this.setState({openEditor: !this.state.openEditor})}>
+                {this.state.openEditor ? 'Cancel' : 'New'}
+              </button>
+            }
           </div>
 
           {this.isActivity
-            ? <div className='plan-page-blogs'>
+            ? <div className='topic-page-blogs'>
                 {this.state.openEditor && this.renderEditor(true)}
                 {this.renderPosts()}
               </div>
-            : <div className='plan-page-blogs'>
+            : <div className='topic-page-blogs'>
                 {this.state.openEditor && this.renderEditor(false)}
                 {this.renderMissions()}
               </div>
@@ -418,4 +419,4 @@ class PlanPage extends React.Component<{}, PlanPageState> {
   }
 }
 
-export default PlanPage;
+export default TopicPage;

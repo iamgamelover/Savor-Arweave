@@ -3,6 +3,7 @@
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
   padding: 10px;
+  padding-bottom: 5px;
 }
 
 .mission-panel-row-header {
@@ -53,15 +54,16 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  margin-top: 15px;
   /* background-color: rgb(74, 64, 147); */
 }
 
 .mission-panel-action-icon {
-  padding: 12px 10px 7px 0;
-  /* background-color: rgb(87, 155, 19); */
+  margin-right: 7px;
 }
 
 .mission-panel-action-number {
-  font-size: 0.8em;
+  font-size: 15px;
+  margin-bottom: 3px;
   color: rgb(205, 191, 191);
 }

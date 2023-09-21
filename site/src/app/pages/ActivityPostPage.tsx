@@ -8,8 +8,8 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill } from 'react-icons/bs';
 import { checkContent } from './ActivityPage';
-import { POSTS_SHEET_ID, REPLIES_SHEET_ID } from '../util/consts';
 import { subscribe } from '../util/event';
+import { TIPS_ARWEAVE } from '../util/consts';
 
 interface ActivityPostPageState {
   post: any;
@@ -23,7 +23,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
   quillRef: any;
   wordCount = 0;
-  postCid: string;
+  postId: string;
 
   constructor(props: {}) {
     super(props);
@@ -52,28 +52,32 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   async getPost(noCache?: boolean) {
-    this.postCid = window.location.pathname.substring(15);
-    let post     = Server.public.getPostFromCache(this.postCid);
+    this.postId = window.location.pathname.substring(15);
+    let post     = Server.public.getPostFromCache(this.postId);
 
     if (!post || noCache) {
-      let response = await Server.activity.getPost(this.postCid);
+      let response = await Server.activity.getPost(this.postId);
       if (!response.success) return;
       post = response.post;
-      if (post.author)
-        await Server.public.loadProfileFromId(post.author);
+      if (!post) {
+        this.setState({ alert: 'No post found.' });
+        return;
+      }
+
+      await Server.public.loadProfileFromId(post.author);
     }
 
     console.log("post:", post)
     this.setState({ post, loading: false });
     
     // get replies
-    let replies = Server.public.getRepliesFromCache(this.postCid);
+    let replies = Server.public.getRepliesFromCache(this.postId);
     if (!replies) {
-      let response = await Server.activity.getReplies(this.postCid);
+      let response = await Server.activity.getReplies(this.postId);
       if (!response.success) return;
 
       replies = response.replies;
-      Server.public.addRepliesToCache(this.postCid, replies);
+      Server.public.addRepliesToCache(this.postId, replies);
 
       // cache profiles
       let profiles = [];
@@ -100,16 +104,14 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
     let html   = this.quillRef.root.innerHTML;
     let params = {
-      author: Server.user.getId(), 
       content: encodeURIComponent(html)
     };
 
-    let response = await Server.activity.createReply(this.postCid, params);
+    let response = await Server.activity.createReply(this.postId, params);
 
     if (response.success) {
       this.quillRef.setText('');
-      this.setState({message: ''});
-      this.getPost(true);
+      this.setState({message: '', alert: TIPS_ARWEAVE});
     }
     else
       this.setState({message: '', alert: response.message})

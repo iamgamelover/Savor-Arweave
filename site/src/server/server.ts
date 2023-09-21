@@ -3,27 +3,26 @@ import { UserService } from './userService';
 import { ServiceResponse } from './service';
 import { PublicService } from './publicService';
 import { ActivityService } from './activityService';
-import { PlansService } from './plansService ';
+import { TopicService } from './topicService';
 import Provider, { EthereumProvider } from '@walletconnect/ethereum-provider';
 import { publish } from '../app/util/event';
 import Web3 from 'web3';
 import { providers } from "ethers";
 import { WebBundlr } from "@bundlr-network/client";
+import LoginModal from '../app/modals/LoginModal';
 
 declare var window: any;
 
 export class Server {
   public static account: AccountService = new AccountService();
   public static activity: ActivityService = new ActivityService();
-  public static plans: PlansService = new PlansService();
+  public static topic: TopicService = new TopicService();
   public static user: UserService = new UserService();
   public static public: PublicService = new PublicService();
   public static initialized: boolean = false;
   
   protected static signUpDetails: any = null;
   
-  // Objects of Google Sheet
-  public static GoogleSheet: any;
   public static provider: Provider;
   public static web3: Web3;
 
@@ -31,20 +30,19 @@ export class Server {
   public static bundlr: any;
 
   public static async init() {
-    // load objects of Google Sheet
-    this.GoogleSheet = await Server.public.getGoogleSheet();
-
     if (Server.account.isMetamaskLoggedIn()) {
+      LoginModal.subscribeMetaMaskEvents();
       this.web3 = new Web3(window.ethereum);
-      await this.initArweave();
     }
     // else
     //   await this.initProvider();
 
-    if (Server.account.isLoggedIn())
+    if (Server.account.isLoggedIn()) {
       await Server.user.sync();
+    }
 
-    await this.getPlans();
+    await Server.topic.getTopics();
+    await Server.topic.getMissions();
 
     Server.initialized = true;
   }
@@ -83,12 +81,6 @@ export class Server {
       console.log("accountsChanged:", accounts);
       publish('wallet-events');
     });
-  }
-
-  protected static async getPlans() {
-    let response = await Server.plans.getPlans();
-    if (!response.success) return;
-    Server.public.addPlansToCache(response.plans);
   }
 
   public static async signOut() {

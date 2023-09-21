@@ -3,6 +3,7 @@
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
   padding: 10px;
+  padding-bottom: 5px;
 }
 
 .activity-post-row-header {
@@ -12,13 +13,10 @@
   font-size: 0.8em;
   color: lightgray;
   display: flex;
-  column-gap: 10px;
-  /* flex-direction: row; */
-  /* justify-content: space-between; */
+  justify-content: space-between;
   align-items: center;
-  padding-left: 10px;
-  padding-right: 5px;
-  height: 34px;
+  padding: 0 10px;
+  height: 35px;
 }
 
 .activity-post-navlink {
@@ -31,7 +29,6 @@
 .activity-post-profile {
   display: flex;
   align-items: center;
-  /* font-size: 0.9em; */
   margin-bottom: 15px;
 }
 
@@ -69,15 +66,30 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  margin-top: 15px;
   /* background-color: rgb(74, 64, 147); */
 }
 
 .activity-post-action-icon {
-  padding: 12px 10px 7px 0;
-  /* background-color: rgb(87, 155, 19); */
+  margin-right: 7px;
 }
 
 .activity-post-action-number {
-  font-size: 0.8em;
+  font-size: 15px;
+  margin-bottom: 3px;
   color: rgb(205, 191, 191);
+}
+
+.activity-post-hashtag {
+  display: flex;
+  text-decoration: none;
+  align-items: center;
+  font-size: 16px;
+}
+
+.activity-post-topic-image {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: 8px;
 }

@@ -115,7 +115,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     if (this.isActivity)
       this.getPosts(this.author);
     else
-      this.getMissions(this.author);
+      this.getMissionsOfAuthor(this.author);
   }
 
   onQuestionYes() {
@@ -229,7 +229,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     else {
       this.setState({missions: []});
       setTimeout(() => {
-        this.getMissions(this.author);
+        this.getMissionsOfAuthor(this.author);
       }, 10);
     }
   }
@@ -304,36 +304,34 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs.length > 0 ? divs : <div>No posts yet.</div>
   }
 
-  async getMissions(params: any) {
-    // if (this.state.blogs.length == 0)
-    //   this.setState({loading: true});
+  async getMissionsOfAuthor(author: string) {
+    if (this.state.missions.length == 0)
+      this.setState({loading: true});
 
-    // let response = await Server.blogs.getBlogs(params);
-    // if (!response.success)
-    //   return
+    let response = await Server.topic.getMissionsOfAuthor(author);
+    if (!response.success) return;
 
-    // let blogs = response.blogs;
-    // if (this.state.loadingMorePosts)
-    //   blogs = this.state.blogs.concat(blogs);
+    let missions = response.missions;
+    if (this.state.loadingMorePosts)
+      missions = this.state.missions.concat(missions);
 
-    // this.setState({blogs: blogs, loading: false, loadingMorePosts: false});
+    this.setState({missions, loading: false, loadingMorePosts: false});
 
-    // setTimeout(() => {
-    //   let div = document.getElementById('id-app-page');
-    //   div.scrollTo(0, this.posLodMore);
-    // }, 10);
+    setTimeout(() => {
+      let div = document.getElementById('id-app-page');
+      div.scrollTo(0, this.posLodMore);
+    }, 10);
   }
 
   renderMissions() {
-    return (<div>No missions yet.</div>)
-    // if (this.state.loading)
-    //   return (<div>Loading...</div>);
+    if (this.state.loading)
+      return (<div>Loading...</div>);
 
-    // let divs = [];
-    // for (let i = 0; i < this.state.blogs.length; i++)
-    //   divs.push(<BlogCard key={i} data={this.state.blogs[i]}  onClick={this.onBlogClick} onEdit={this.onBlogEdit} />);
+    let divs = [];
+    for (let i = 0; i < this.state.missions.length; i++)
+      divs.push(<ActivityPost key={i} data={this.state.missions[i]} isMission={true} />);
 
-    // return divs.length > 0 ? divs : <div>No blogs yet.</div>
+    return divs.length > 0 ? divs : <div>No missions yet.</div>
   }
   
   render() {
@@ -348,7 +346,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       )
     }
       
-    let joined = new Date(this.state.profile.date * 1000).toLocaleString();
+    let joined = new Date(Number(this.state.profile.created_at)).toLocaleString();
 
     let isFriend = false;
     let isCurrent = false;
