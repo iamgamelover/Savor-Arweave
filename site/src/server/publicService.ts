@@ -11,7 +11,13 @@ declare var window: any;
 export class PublicService extends Service {
   protected profiles:any;
   protected posts:any;
+  protected postsOfMission:any;
+  protected postsOfTopic:any;
+  protected postsOfAuthor:any;
+  protected missionsOfAuthor:any;
+  protected missionsOfTopic:any;
   protected post:any;
+  protected postContent:any;
   protected replies:any;
   protected topics:any;
   protected topic:any;
@@ -22,7 +28,13 @@ export class PublicService extends Service {
   constructor() {
     super();
     this.profiles = [];
+    this.postsOfMission = [];
+    this.postsOfTopic = [];
+    this.postsOfAuthor = [];
+    this.missionsOfAuthor = [];
+    this.missionsOfTopic = [];
     this.post = [];
+    this.postContent = [];
     this.replies = [];
     this.topic = [];
     this.mission = [];
@@ -66,7 +78,46 @@ export class PublicService extends Service {
 
   public addProfileToCache(profile:any) {
     this.profiles[profile.id] = profile;
-    // this.profiles[profile.slug] = profile;
+  }
+
+  public addPostsOfMissionToCache(posts:any, id:string) {
+    this.postsOfMission[id] = posts;
+  }
+
+  public getPostsOfMissionFromCache(id:string) {
+    return this.postsOfMission[id];
+  }
+
+  public addPostsOfTopicToCache(posts:any, id:string) {
+    this.postsOfTopic[id] = posts;
+  }
+
+  public getPostsOfTopicFromCache(id:string) {
+    return this.postsOfTopic[id];
+  }
+
+  public addMissionsOfTopicToCache(missions:any, id:string) {
+    this.missionsOfTopic[id] = missions;
+  }
+
+  public getMissionsOfTopicFromCache(id:string) {
+    return this.missionsOfTopic[id];
+  }
+
+  public addPostsOfAuthorToCache(posts:any, id:string) {
+    this.postsOfAuthor[id] = posts;
+  }
+
+  public getPostsOfAuthorFromCache(id:string) {
+    return this.postsOfAuthor[id];
+  }
+
+  public addMissionsOfAuthorToCache(missions:any, id:string) {
+    this.missionsOfAuthor[id] = missions;
+  }
+
+  public getMissionsOfAuthorFromCache(id:string) {
+    return this.missionsOfAuthor[id];
   }
 
   public addPostToCache(post:any) {
@@ -75,6 +126,14 @@ export class PublicService extends Service {
 
   public getPostFromCache(id:string) {
     return this.post[id];
+  }
+
+  public addPostContentToCache(id:string, content:string) {
+    this.postContent[id] = content;
+  }
+
+  public getPostContentFromCache(id:string) {
+    return this.postContent[id];
   }
 
   public addRepliesToCache(id:string, replies:any) {
@@ -150,6 +209,7 @@ export class PublicService extends Service {
     let data = await resp.json();
     let content = decodeURIComponent(data.content);
     content     = BadWords.clean(content);
+    console.log("--> downloadFromArweave", content)
     return content;
   }
 

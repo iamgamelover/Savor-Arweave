@@ -1,6 +1,6 @@
 import React from 'react';
-import { BsChat, BsChatSquareText, BsCoin, BsHeart, BsHeartFill } from 'react-icons/bs';
-import { capitalizeFirstLetter, convertHashTag, convertSlug, convertUrls, getPortraitImage, numberWithCommas } from '../util/util';
+import { BsChat, BsChatSquareText, BsCoin } from 'react-icons/bs';
+import { capitalizeFirstLetter, convertHashTag, convertUrls, getPortraitImage, numberWithCommas } from '../util/util';
 import { Server } from '../../server/server';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
@@ -15,11 +15,13 @@ interface ActivityPostProps {
   isReply?: boolean;
   isPostPage?: boolean;
   isMission?: boolean;
+  isMissionPage?: boolean;
 }
 
 interface ActivityPostState {
   openImage: boolean;
   navigate: string;
+  content: string;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -44,13 +46,16 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     this.state = {
       openImage: false,
-      navigate: ''
+      navigate: '',
+      content: Server.public.getPostContentFromCache(this.props.data.id),
     };
 
     this.onClose = this.onClose.bind(this);
   }
 
   componentDidMount() {
+    this.getPostContent();
+
     const links = document.querySelectorAll("[id^='url']");
     for (let i = 0; i < links.length; i++) {
       links[i].addEventListener('click', function(e) {
@@ -66,6 +71,16 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         e.stopPropagation();
       });
     }
+  }
+
+  async getPostContent() {
+    let content = this.state.content;
+    if (!content) {
+      content = await Server.public.downloadFromArweave(this.props.data.url);
+      Server.public.addPostContentToCache(this.props.data.id, content);
+    }
+
+    this.setState({ content });
   }
 
   tapImage(e: any, src: string) {
@@ -170,8 +185,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let data    = this.props.data;
     let author  = Server.public.getProfile(data.author);
     let date    = formatTimestamp(data.block_timestamp, true);
-    let content = convertHashTag(data.content);
-    content     = convertUrls(content);
+    // let content = convertHashTag(data.content);
+    // content     = convertUrls(content);
     let topic   = Server.public.getTopicFromCache(data.topic_id);
     let mission = Server.public.getMissionFromCache(data.mission_id);
     let path    = window.location.pathname.substring(1, 6);
@@ -181,7 +196,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     return (
       <div
-        style={{cursor: this.state.openImage || this.props.isReply || this.props.isPostPage ? 'auto' : 'pointer'}}
+        style={{cursor: this.state.openImage || this.props.isReply 
+          || this.props.isPostPage || this.props.isMissionPage ? 'auto' : 'pointer'}}
         onClick={()=>this.onJump(data.id)}
       >
         <div className='activity-post-row-header'>
@@ -215,7 +231,12 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
             </div>
           </div>
 
-          <div>{parse(content, this.parseOptions)}</div>
+          {/* <div>{parse(content, this.parseOptions)}</div> */}
+          {this.state.content
+            ? <div>{parse(this.state.content, this.parseOptions)}</div>
+            : <div>Loading...</div>
+          }
+          
           {this.renderActionsRow(data)}
         </div>
 

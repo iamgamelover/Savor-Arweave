@@ -115,7 +115,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     if (this.isActivity)
       this.getPosts(this.author);
     else
-      this.getMissionsOfAuthor(this.author);
+      this.getMissions(this.author);
   }
 
   onQuestionYes() {
@@ -229,7 +229,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     else {
       this.setState({missions: []});
       setTimeout(() => {
-        this.getMissionsOfAuthor(this.author);
+        this.getMissions(this.author);
       }, 10);
     }
   }
@@ -269,23 +269,23 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async getPosts(author: string) {
+    let posts = Server.public.getPostsOfAuthorFromCache(author);
+    if (posts) {
+      this.setState({ posts });
+      return;
+    }
+
     if (this.state.posts.length == 0)
       this.setState({loading: true});
 
-    let response = await Server.activity.getPosts();
+    let response = await Server.activity.getPostsOfAuthor(author);
     if (!response.success) return;
 
-    let posts = response.posts;
-    posts = posts.filter((item) => {
-      return item.author == author;
-    });
-
-    console.log("posts:", posts)
-
+    posts = response.posts;
     if (this.state.loadingMorePosts)
       posts = this.state.posts.concat(posts);
 
-    this.setState({posts: posts, loading: false, loadingMorePosts: false});
+    this.setState({posts, loading: false, loadingMorePosts: false});
 
     setTimeout(() => {
       let div = document.getElementById('id-app-page');
@@ -304,14 +304,20 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs.length > 0 ? divs : <div>No posts yet.</div>
   }
 
-  async getMissionsOfAuthor(author: string) {
+  async getMissions(author: string) {
+    let missions = Server.public.getMissionsOfAuthorFromCache(author);
+    if (missions) {
+      this.setState({ missions });
+      return;
+    }
+
     if (this.state.missions.length == 0)
       this.setState({loading: true});
 
     let response = await Server.topic.getMissionsOfAuthor(author);
     if (!response.success) return;
 
-    let missions = response.missions;
+    missions = response.missions;
     if (this.state.loadingMorePosts)
       missions = this.state.missions.concat(missions);
 

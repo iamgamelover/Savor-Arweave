@@ -45,7 +45,7 @@ class MissionsPage extends React.Component<{}, MissionsPageState> {
     let response = await Server.topic.getMissions();
     if (!response.success) return;
 
-    console.log('missions: ', response.missions)
+    // console.log('missions: ', response.missions)
     this.setState({ missions: response.missions, loading: false });
   }
 

@@ -166,24 +166,16 @@ export class ActivityService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-
-      // remove duplicate post
-      let result = [];
-      let ids    = [] as any;
-      for (let i = 0; i < response.length; i++) {
-        let id = response[i].node.tags[2].value;
-        if (!ids.includes(id)) {
-          ids.push(id);
-          result.push(response[i]);
-        }
-      }
+      let data = Server.topic.removeDuplicate(response);
       
       let posts = [];
-      for (let i = 0; i < result.length; i++) {
-        let post = await this.getPostContent(result[i]);
+      for (let i = 0; i < data.length; i++) {
+        let post = await this.getPostContent(data[i]);
         posts.push(post);
         Server.public.addPostToCache(post);
       }
+      
+      Server.public.addPostsToCache(posts);
 
       let end = performance.now();
       console.log(`<== [getPosts] [${Math.round(end - start)} ms]`);
@@ -192,6 +184,130 @@ export class ActivityService extends Service {
     } catch (error) {
       console.log("ERR:", error);
       return {success: false, message: 'getPosts failed.'};
+    }
+  }
+
+  public async getPostsOfAuthor(author: string) {
+    let start = performance.now();
+    console.log('==> [getPostsOfAuthor]');
+
+    const queryObject = {
+      query:
+      `{
+        transactions (
+          first: 10
+          tags: [
+            {
+              name: "table",
+              values: ["${process.env.REACT_APP_TABLE_POSTS}"]
+            }
+            {
+              name: "author",
+              values: ["${author}"]
+            }
+          ]
+        ) {
+          edges {
+            node {
+              id
+              tags {
+                name
+                value
+              }
+              block {
+                id
+                timestamp
+                height
+                previous
+              }
+            }
+          }
+        }
+      }`
+    };
+
+    try {
+      let response = await fetchGraphQL(queryObject);
+      let data = Server.topic.removeDuplicate(response);
+      
+      let posts = [];
+      for (let i = 0; i < data.length; i++) {
+        let post = await this.getPostContent(data[i]);
+        posts.push(post);
+        Server.public.addPostToCache(post);
+      }
+
+      Server.public.addPostsOfAuthorToCache(posts, author);
+
+      let end = performance.now();
+      console.log(`<== [getPostsOfAuthor] [${Math.round(end - start)} ms]`);
+      
+      return {success: true, posts};
+    } catch (error) {
+      console.log("ERR:", error);
+      return {success: false, message: 'getPostsOfAuthor failed.'};
+    }
+  }
+
+  public async getPostsOfTopic(topicId: string) {
+    let start = performance.now();
+    console.log('==> [getPostsOfTopic]');
+
+    const queryObject = {
+      query:
+      `{
+        transactions (
+          first: 10
+          tags: [
+            {
+              name: "table",
+              values: ["${process.env.REACT_APP_TABLE_POSTS}"]
+            }
+            {
+              name: "topic_id",
+              values: ["${topicId}"]
+            }
+          ]
+        ) {
+          edges {
+            node {
+              id
+              tags {
+                name
+                value
+              }
+              block {
+                id
+                timestamp
+                height
+                previous
+              }
+            }
+          }
+        }
+      }`
+    };
+
+    try {
+      let response = await fetchGraphQL(queryObject);
+      let data = Server.topic.removeDuplicate(response);
+      
+      let posts = [];
+      for (let i = 0; i < data.length; i++) {
+        let post = await this.getPostContent(data[i]);
+        posts.push(post);
+        Server.public.addPostToCache(post);
+      }
+      
+      Server.public.addPostsOfTopicToCache(posts, topicId);
+
+      let end = performance.now();
+      console.log(`<== [getPostsOfTopic] [${Math.round(end - start)} ms]`);
+      
+      return {success: true, posts};
+    } catch (error) {
+      console.log("ERR:", error);
+      return {success: false, message: 'getPostsOfTopic failed.'};
     }
   }
 
@@ -327,9 +443,9 @@ export class ActivityService extends Service {
     }
   }
 
-  public async getMissionPosts(missionId: string, missionIndex: string) {
+  public async getPostsOfMission(missionId: string, missionIndex: string) {
     let start = performance.now();
-    console.log('==> [getMissionPosts]');
+    console.log('==> [getPostsOfMission]');
 
     const queryObject = {
       query:
@@ -372,32 +488,24 @@ export class ActivityService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
+      let data = Server.topic.removeDuplicate(response);
 
-      // remove duplicate post
-      let result = [];
-      let ids    = [] as any;
-      for (let i = 0; i < response.length; i++) {
-        let id = response[i].node.tags[2].value;
-        if (!ids.includes(id)) {
-          ids.push(id);
-          result.push(response[i]);
-        }
-      }
-      
       let posts = [];
-      for (let i = 0; i < result.length; i++) {
-        let post = await this.getPostContent(result[i]);
+      for (let i = 0; i < data.length; i++) {
+        let post = await this.getPostContent(data[i]);
         posts.push(post);
         Server.public.addPostToCache(post);
       }
+      
+      Server.public.addPostsOfMissionToCache(posts, missionIndex);
 
       let end = performance.now();
-      console.log(`<== [getMissionPosts] [${Math.round(end - start)} ms]`);
+      console.log(`<== [getPostsOfMission] [${Math.round(end - start)} ms]`);
       
       return {success: true, posts};
     } catch (error) {
       console.log("ERR:", error);
-      return {success: false, message: 'getMissionPosts failed.'};
+      return {success: false, message: 'getPostsOfMission failed.'};
     }
   }
 
@@ -405,7 +513,7 @@ export class ActivityService extends Service {
     let tags    = data.node.tags;
     let block   = data.node.block;
     let url     = tags[7].value ? tags[7].value : ARWEAVE_GATEWAY + data.node.id;
-    let content = await Server.public.downloadFromArweave(url);
+    // let content = await Server.public.downloadFromArweave(url);
   
     let post = {
       id: tags[2].value,
@@ -418,7 +526,8 @@ export class ActivityService extends Service {
       updated_at: tags[9].value,
       mission_id: tags[10].value,
       mission_index: tags[11].value,
-      content: content,
+      // content: content,
+      content: '',
       block_id: block.id,
       block_height: block.height, // number
       block_timestamp: block.timestamp, // seconds

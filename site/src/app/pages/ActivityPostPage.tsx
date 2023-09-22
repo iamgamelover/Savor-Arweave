@@ -6,7 +6,7 @@ import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
-import { BsFillArrowLeftCircleFill } from 'react-icons/bs';
+import { BsClock, BsFillArrowLeftCircleFill } from 'react-icons/bs';
 import { checkContent } from './ActivityPage';
 import { subscribe } from '../util/event';
 import { TIPS_ARWEAVE } from '../util/consts';
@@ -136,6 +136,8 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   render() {
+    let date = new Date(Number(this.state.post.block_timestamp * 1000)).toLocaleString();
+
     return (
       <div className="activity-post-page">
         <div className="activity-post-page-header">
@@ -145,6 +147,10 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
         {!this.state.loading && 
           <ActivityPost data={this.state.post} isPostPage={true} />
+        }
+
+        {!this.state.loading &&
+          <div className='mission-page-block-time'><BsClock />{date}</div>
         }
 
         {!this.state.loading && Server.account.isLoggedIn() &&

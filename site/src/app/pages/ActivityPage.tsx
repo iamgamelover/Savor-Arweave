@@ -95,19 +95,16 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
     let response = await Server.activity.getPosts();
     if (!response.success) return;
 
+    let posts = response.posts;
+    this.setState({ posts, loading: false });
+
     // cache profiles
     let profiles = [];
-    let posts = response.posts;
-
     for (let i = 0; i < posts.length; i++) {
       if (posts[i].author && profiles.indexOf(posts[i].author) == -1)
         profiles.push(posts[i].author);
     }
-
     await Server.public.loadProfiles(profiles);
-
-    this.setState({ posts, loading: false });
-    Server.public.addPostsToCache(posts);
   }
 
   async onPost() {

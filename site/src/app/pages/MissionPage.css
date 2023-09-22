@@ -92,6 +92,23 @@
   margin-top: 15px;
 }
 
+.mission-page-block-data {
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  color: lightgray;
+  background-color: rgb(9, 122, 51);
+}
+
+.mission-page-block-time {
+  display: flex;
+  align-items: center;
+  column-gap: 5px;
+  font-size: 14px;
+  color: lightgray;
+  margin-top: -8px;
+}
+
 @media (max-width: 600px) {
   .mission-page {
     padding: 10px;

@@ -73,7 +73,7 @@ class TopicsPage extends React.Component<{}, TopicsPageState> {
     if (!response.success) return;
 
     let topics = response.topics;
-    console.log('topics: ', topics)
+    // console.log('topics: ', topics)
     this.allTopics = topics;
     this.setState({ topics, loading: false });
   }

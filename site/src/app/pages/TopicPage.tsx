@@ -29,7 +29,7 @@ interface TopicPageState {
 }
 
 class TopicPage extends React.Component<{}, TopicPageState> {
-  isActivity = false;
+  isActivity = true;
   quillRef: any;
   wordCount = 0;
   imgUrl: string;
@@ -76,7 +76,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
     if (this.isActivity)
       this.getPosts();
     else
-      this.getMissionsOfTopic();
+      this.getMissions();
   }
 
   tapImage(e: any, src: string) {
@@ -105,7 +105,6 @@ class TopicPage extends React.Component<{}, TopicPageState> {
   async getTopic() {
     let id    = window.location.pathname.substring(7);
     let topic = Server.public.getTopicFromCache(id);
-    console.log("topic:", topic)
 
     if (!topic) {
       let response = await Server.topic.getTopic(id);
@@ -117,32 +116,39 @@ class TopicPage extends React.Component<{}, TopicPageState> {
   }
 
   async getPosts() {
+    let id    = window.location.pathname.substring(7);
+    let posts = Server.public.getPostsOfTopicFromCache(id);
+    if (posts) {
+      this.setState({ posts });
+      return;
+    }
+
     if (this.state.posts.length == 0)
       this.setState({loading: true});
 
-    let id       = window.location.pathname.substring(7);
-    let response = await Server.activity.getPosts();
+    let response = await Server.activity.getPostsOfTopic(id);
     if (!response.success) return;
 
-    let posts = response.posts;
-    posts = posts.filter((item) => {
-      return item.topic_id == id;
-    });
-
-    console.log('topic posts ->: ', posts)
+    posts = response.posts;
     this.setState({ posts, loading: false });
 
-    // cache profiles
+    // TODO: will do each methods - cache profiles
     let profiles = [];
     for (let i = 0; i < posts.length; i++) {
       if (posts[i].author && profiles.indexOf(posts[i].author) == -1)
         profiles.push(posts[i].author);
     }
-
     await Server.public.loadProfiles(profiles);
   }
 
-  async getMissionsOfTopic() {
+  async getMissions() {
+    let id       = window.location.pathname.substring(7);
+    let missions = Server.public.getMissionsOfTopicFromCache(id);
+    if (missions) {
+      this.setState({ missions });
+      return;
+    }
+
     if (this.state.missions.length == 0)
       this.setState({loading: true});
       
@@ -150,11 +156,9 @@ class TopicPage extends React.Component<{}, TopicPageState> {
     // console.log("balance:", balance)
     // this.setState({balance});
 
-    let id = window.location.pathname.substring(7);
     let response = await Server.topic.getMissionsOfTopic(id);
     if (!response.success) return;
 
-    console.log('missions ->: ', response.missions)
     this.setState({ missions: response.missions, loading: false });
   }
 
@@ -176,7 +180,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
     else {
       this.setState({missions: [], openEditor: false});
       setTimeout(() => {
-        this.getMissionsOfTopic();
+        this.getMissions();
       }, 10);
     }
   }
@@ -299,7 +303,6 @@ class TopicPage extends React.Component<{}, TopicPageState> {
     if (response.success) {
       this.quillRef.setText('');
       this.setState({message: '', alert: TIPS_ARWEAVE});
-      // this.getPosts();
     }
     else
       this.setState({message: '', alert: response.message})

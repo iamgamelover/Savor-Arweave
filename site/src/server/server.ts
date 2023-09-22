@@ -41,6 +41,7 @@ export class Server {
       await Server.user.sync();
     }
 
+    await Server.activity.getPosts();
     await Server.topic.getTopics();
     await Server.topic.getMissions();
 

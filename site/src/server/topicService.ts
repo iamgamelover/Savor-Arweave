@@ -168,21 +168,11 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      
-      // remove duplicate topic
-      let result = [];
-      let ids    = [] as any;
-      for (let i = 0; i < response.length; i++) {
-        let id = response[i].node.tags[2].value;
-        if (!ids.includes(id)) {
-          ids.push(id);
-          result.push(response[i]);
-        }
-      }
+      let data = this.removeDuplicate(response);
 
       let topics = [];
-      for (let i = 0; i < result.length; i++) {
-        let topic = await this.getTopicContent(result[i]);
+      for (let i = 0; i < data.length; i++) {
+        let topic = await this.getTopicContent(data[i]);
         topics.push(topic);
         Server.public.addTopicToCache(topic);
       }
@@ -322,21 +312,11 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-
-      // remove duplicate post
-      let result = [];
-      let ids    = [] as any;
-      for (let i = 0; i < response.length; i++) {
-        let id = response[i].node.tags[2].value;
-        if (!ids.includes(id)) {
-          ids.push(id);
-          result.push(response[i]);
-        }
-      }
+      let data = this.removeDuplicate(response);
 
       let missions = [];
-      for (let i = 0; i < result.length; i++) {
-        let mission = await this.getMissionContent(result[i]);
+      for (let i = 0; i < data.length; i++) {
+        let mission = await this.getMissionContent(data[i]);
         missions.push(mission);
         Server.public.addMissionToCache(mission);
       }
@@ -393,15 +373,16 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
+      let data = this.removeDuplicate(response);
 
       let missions = [];
-      for (let i = 0; i < response.length; i++) {
-        let mission = await this.getMissionContent(response[i]);
+      for (let i = 0; i < data.length; i++) {
+        let mission = await this.getMissionContent(data[i]);
         missions.push(mission);
         Server.public.addMissionToCache(mission);
       }
 
-      Server.public.addMissionsToCache(missions);
+      Server.public.addMissionsOfTopicToCache(missions, topicId);
 
       let end = performance.now();
       console.log(`<== [getMissionsOfTopic] [${Math.round(end - start)} ms]`);
@@ -453,13 +434,16 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
+      let data = this.removeDuplicate(response);
 
       let missions = [];
-      for (let i = 0; i < response.length; i++) {
-        let mission = await this.getMissionContent(response[i]);
+      for (let i = 0; i < data.length; i++) {
+        let mission = await this.getMissionContent(data[i]);
         missions.push(mission);
         Server.public.addMissionToCache(mission);
       }
+      
+      Server.public.addMissionsOfAuthorToCache(missions, author);
 
       let end = performance.now();
       console.log(`<== [getMissionsOfAuthor] [${Math.round(end - start)} ms]`);
@@ -532,7 +516,7 @@ export class TopicService extends Service {
     let tags    = data.node.tags;
     let block   = data.node.block;
     let url     = tags[10].value ? tags[10].value : ARWEAVE_GATEWAY + data.node.id;
-    let content = await Server.public.downloadFromArweave(url);
+    // let content = await Server.public.downloadFromArweave(url);
 
     let mission = {
       id: tags[2].value,
@@ -546,7 +530,8 @@ export class TopicService extends Service {
       url: url,
       created_at: tags[11].value,
       updated_at: tags[12].value,
-      content: content,
+      // content: content,
+      content: '',
       block_id: block.id,
       block_height: block.height, // number
       block_timestamp: block.timestamp, // seconds
@@ -598,5 +583,19 @@ export class TopicService extends Service {
       console.log("ERR:", error);
       return {success: false, message: 'Failed: [updateMission]'};
     }
+  }
+
+  removeDuplicate(data: any) {
+    let result = [];
+    let ids    = [] as any;
+    for (let i = 0; i < data.length; i++) {
+      let id = data[i].node.tags[2].value;
+      if (!ids.includes(id)) {
+        ids.push(id);
+        result.push(data[i]);
+      }
+    }
+
+    return result;
   }
 }
