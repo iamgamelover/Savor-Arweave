@@ -513,7 +513,6 @@ export class ActivityService extends Service {
     let tags    = data.node.tags;
     let block   = data.node.block;
     let url     = tags[7].value ? tags[7].value : ARWEAVE_GATEWAY + data.node.id;
-    // let content = await Server.public.downloadFromArweave(url);
   
     let post = {
       id: tags[2].value,
@@ -526,7 +525,6 @@ export class ActivityService extends Service {
       updated_at: tags[9].value,
       mission_id: tags[10].value,
       mission_index: tags[11].value,
-      // content: content,
       content: '',
       block_id: block.id,
       block_height: block.height, // number

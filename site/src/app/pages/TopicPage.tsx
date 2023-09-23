@@ -9,7 +9,7 @@ import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import parse, { attributesToProps } from 'html-react-parser';
 import ViewImageModal from '../modals/ViewImageModal';
-import { numberWithCommas } from '../util/util';
+import { getFirstImage, numberWithCommas } from '../util/util';
 import { subscribe } from '../util/event';
 import { TIPS_ARWEAVE } from '../util/consts';
 
@@ -26,6 +26,8 @@ interface TopicPageState {
   balance: string;
   award: string;
   dream: string;
+  content: string;
+  image: string;
 }
 
 class TopicPage extends React.Component<{}, TopicPageState> {
@@ -33,6 +35,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
   quillRef: any;
   wordCount = 0;
   imgUrl: string;
+  topicId: string;
 
   parseOptions = {
     replace: (domNode: any) => {
@@ -58,6 +61,8 @@ class TopicPage extends React.Component<{}, TopicPageState> {
       balance: '',
       award: '1',
       dream: 'explorer',
+      content: '',
+      image: '/topic-default.jpg',
     }
 
     this.onContentChange = this.onContentChange.bind(this);
@@ -71,6 +76,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
   }
 
   componentDidMount() {
+    this.topicId = window.location.pathname.substring(7);
     this.getTopic();
 
     if (this.isActivity)
@@ -103,21 +109,32 @@ class TopicPage extends React.Component<{}, TopicPageState> {
   }
 
   async getTopic() {
-    let id    = window.location.pathname.substring(7);
-    let topic = Server.public.getTopicFromCache(id);
+    let topic = Server.public.getTopicFromCache(this.topicId);
 
     if (!topic) {
-      let response = await Server.topic.getTopic(id);
+      let response = await Server.topic.getTopic(this.topicId);
       if (!response.success) return;
       topic = response.topic;
     }
 
     this.setState({topic});
+    this.getTopicContent(topic);
+  }
+
+  async getTopicContent(topic: any) {
+    let content = Server.public.getTopicContentFromCache(topic.id);
+    if (!content) {
+      content = await Server.public.downloadFromArweave(topic.url);
+      Server.public.addTopicContentToCache(topic.id, content);
+    }
+
+    let image = getFirstImage(content);
+    if (!image) image = '/topic-default.jpg';
+    this.setState({ content, image });
   }
 
   async getPosts() {
-    let id    = window.location.pathname.substring(7);
-    let posts = Server.public.getPostsOfTopicFromCache(id);
+    let posts = Server.public.getPostsOfTopicFromCache(this.topicId);
     if (posts) {
       this.setState({ posts });
       return;
@@ -126,7 +143,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
     if (this.state.posts.length == 0)
       this.setState({loading: true});
 
-    let response = await Server.activity.getPostsOfTopic(id);
+    let response = await Server.activity.getPostsOfTopic(this.topicId);
     if (!response.success) return;
 
     posts = response.posts;
@@ -142,8 +159,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
   }
 
   async getMissions() {
-    let id       = window.location.pathname.substring(7);
-    let missions = Server.public.getMissionsOfTopicFromCache(id);
+    let missions = Server.public.getMissionsOfTopicFromCache(this.topicId);
     if (missions) {
       this.setState({ missions });
       return;
@@ -156,7 +172,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
     // console.log("balance:", balance)
     // this.setState({balance});
 
-    let response = await Server.topic.getMissionsOfTopic(id);
+    let response = await Server.topic.getMissionsOfTopic(this.topicId);
     if (!response.success) return;
 
     this.setState({ missions: response.missions, loading: false });
@@ -354,7 +370,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
       <div className='topic-page'>
         <div className='topic-page-header'>
           <img className="topic-page-banner" src={topic.banner} />
-          <img className="topic-page-portrait" src={topic.image} />
+          <img className="topic-page-portrait" src={this.state.image} />
         </div>
 
         <div className="topic-page-title">{topic.title}</div>
@@ -365,7 +381,7 @@ class TopicPage extends React.Component<{}, TopicPageState> {
         
         {this.state.showMoreDesc &&
           <div className='topic-page-desc-more-panel'>
-            {parse(topic.content, this.parseOptions)}
+            {parse(this.state.content, this.parseOptions)}
           </div>
         }
 

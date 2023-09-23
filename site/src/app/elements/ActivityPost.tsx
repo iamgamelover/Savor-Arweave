@@ -231,10 +231,12 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
             </div>
           </div>
 
-          {/* <div>{parse(content, this.parseOptions)}</div> */}
           {this.state.content
             ? <div>{parse(this.state.content, this.parseOptions)}</div>
-            : <div>Loading...</div>
+            : <div className="skeleton">
+                <div className="skeleton-bar" />
+                <div className="skeleton-bar width2" />
+              </div>
           }
           
           {this.renderActionsRow(data)}

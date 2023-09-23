@@ -2,9 +2,9 @@ import React from 'react';
 import './TopicsPage.css'
 import { NavLink } from 'react-router-dom';
 import { Server } from '../../server/server';
-import { formatTimestamp, getFirstImage } from '../util/util';
 import { subscribe } from '../util/event';
 import { BsArrowClockwise } from 'react-icons/bs';
+import TopicCard from '../elements/TopicCard';
 
 interface TopicsPageState {
   topics: any[];
@@ -54,15 +54,18 @@ class TopicsPage extends React.Component<{}, TopicsPageState> {
 
   onCategoryChange(e: any) {
     let category = e.currentTarget.value;
+    this.setState({topics: []});
     
-    if (category === 'all')
-      this.setState({category, topics: this.allTopics });
-    else {
-      let topics = this.allTopics.filter((item: any) => {
-        return item.category == category;
-      });
-      this.setState({category, topics });
-    }
+    setTimeout(() => {
+      if (category === 'all')
+        this.setState({category, topics: this.allTopics });
+      else {
+        let topics = this.allTopics.filter((item: any) => {
+          return item.category == category;
+        });
+        this.setState({category, topics });
+      }
+    }, 20);
   };
 
   async getTopics() {
@@ -73,7 +76,6 @@ class TopicsPage extends React.Component<{}, TopicsPageState> {
     if (!response.success) return;
 
     let topics = response.topics;
-    // console.log('topics: ', topics)
     this.allTopics = topics;
     this.setState({ topics, loading: false });
   }
@@ -83,25 +85,8 @@ class TopicsPage extends React.Component<{}, TopicsPageState> {
       return (<div>Loading...</div>); 
 
     let divs = [];
-    for (let i = 0; i < this.state.topics.length; i++) {
-      let data = this.state.topics[i];
-      divs.push(
-        <NavLink key={i} className='topic-card' to={'/topic/' + data.id}>
-          <div className='topic-card-image-container'>
-            <img className='topic-card-image' src={data.image} />
-          </div>
-          <div>
-            <div className='topic-card-header'>
-              <div className='topic-card-publisher'>{data.publisher}</div>
-              <div className='topic-card-summary'>·</div>
-              <div className='topic-card-summary'>{formatTimestamp(data.block_timestamp, true)}</div>
-            </div>
-            <div className='topic-card-title'>{data.title}</div>
-            <div className='topic-card-summary'>{data.summary}</div>
-          </div>
-        </NavLink>
-      )
-    }
+    for (let i = 0; i < this.state.topics.length; i++)
+      divs.push(<TopicCard key={i} data={this.state.topics[i]}/>)
 
     return divs.length > 0 ? divs : <div>No topics yet.</div>
   }

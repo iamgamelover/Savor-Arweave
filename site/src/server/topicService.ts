@@ -250,8 +250,6 @@ export class TopicService extends Service {
     let tags    = data.node.tags;
     let block   = data.node.block;
     let url     = tags[11].value ? tags[11].value : ARWEAVE_GATEWAY + data.node.id;
-    let content = await Server.public.downloadFromArweave(url);
-    let image   = getFirstImage(content);
 
     let topic = {
       id: tags[2].value,
@@ -266,8 +264,8 @@ export class TopicService extends Service {
       url: url,
       created_at: tags[12].value,
       updated_at: tags[13].value,
-      content: content,
-      image: image ? image : '/topic-default.jpg',
+      content: '',
+      image: '/topic-default.jpg',
       block_id: block.id,
       block_height: block.height, // number
       block_timestamp: block.timestamp, // seconds

@@ -18,6 +18,7 @@ export class PublicService extends Service {
   protected missionsOfTopic:any;
   protected post:any;
   protected postContent:any;
+  protected topicContent:any;
   protected replies:any;
   protected topics:any;
   protected topic:any;
@@ -35,6 +36,7 @@ export class PublicService extends Service {
     this.missionsOfTopic = [];
     this.post = [];
     this.postContent = [];
+    this.topicContent = [];
     this.replies = [];
     this.topic = [];
     this.mission = [];
@@ -134,6 +136,14 @@ export class PublicService extends Service {
 
   public getPostContentFromCache(id:string) {
     return this.postContent[id];
+  }
+
+  public addTopicContentToCache(id:string, content:string) {
+    this.topicContent[id] = content;
+  }
+
+  public getTopicContentFromCache(id:string) {
+    return this.topicContent[id];
   }
 
   public addRepliesToCache(id:string, replies:any) {
