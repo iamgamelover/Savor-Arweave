@@ -22,6 +22,7 @@ interface ActivityPostState {
   openImage: boolean;
   navigate: string;
   content: string;
+  author: any;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -47,13 +48,15 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.state = {
       openImage: false,
       navigate: '',
-      content: Server.public.getPostContentFromCache(this.props.data.id),
+      content: '',
+      author: ''
     };
 
     this.onClose = this.onClose.bind(this);
   }
 
   componentDidMount() {
+    this.getProfile();
     this.getPostContent();
 
     const links = document.querySelectorAll("[id^='url']");
@@ -74,13 +77,25 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   async getPostContent() {
-    let content = this.state.content;
+    let content = Server.public.getPostContentFromCache(this.props.data.id);
     if (!content) {
       content = await Server.public.downloadFromArweave(this.props.data.url);
+      content = convertHashTag(content);
+      content = convertUrls(content);
       Server.public.addPostContentToCache(this.props.data.id, content);
     }
-
+    
     this.setState({ content });
+  }
+
+  async getProfile() {
+    let author = Server.public.getProfile(this.props.data.author);
+    if (!author) {
+      await Server.public.cacheProfiles([this.props.data]);
+      author = Server.public.getProfile(this.props.data.author);
+    }
+
+    this.setState({ author });
   }
 
   tapImage(e: any, src: string) {
@@ -183,10 +198,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   render() {
     let data    = this.props.data;
-    let author  = Server.public.getProfile(data.author);
+    let author  = this.state.author;
     let date    = formatTimestamp(data.block_timestamp, true);
-    // let content = convertHashTag(data.content);
-    // content     = convertUrls(content);
     let topic   = Server.public.getTopicFromCache(data.topic_id);
     let mission = Server.public.getMissionFromCache(data.mission_id);
     let path    = window.location.pathname.substring(1, 6);
@@ -219,17 +232,23 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         </div>
 
         <div className="activity-post-row">
-          <div className='activity-post-profile'>
-            <img 
-              className="activity-post-portrait clickable" 
-              src={getPortraitImage(author)} 
-              onClick={(e)=>this.goProfilePage(e, author.id)} 
-            />
+          {author
+            ? <div className='activity-post-profile'>
+                <img 
+                  className="activity-post-portrait clickable" 
+                  src={getPortraitImage(author)} 
+                  onClick={(e)=>this.goProfilePage(e, author.id)} 
+                />
 
-            <div className="activity-post-author clickable" onClick={(e)=>this.goProfilePage(e, author.id)}>
-              {author.id == Server.user.getId() ? 'You' : author.name}
-            </div>
-          </div>
+                <div className="activity-post-author clickable" onClick={(e)=>this.goProfilePage(e, author.id)}>
+                  {author.id == Server.user.getId() ? 'You' : author.name}
+                </div>
+              </div>
+            : <div className="skeleton-profile">
+                <div className="skeleton-profile-portrait" />
+                <div className="skeleton-bar width3" />
+              </div>
+          }
 
           {this.state.content
             ? <div>{parse(this.state.content, this.parseOptions)}</div>

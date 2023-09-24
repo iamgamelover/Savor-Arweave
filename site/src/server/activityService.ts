@@ -37,6 +37,7 @@ export class ActivityService extends Service {
           { name: "updated_at", value: Date.now().toString() },
           { name: "mission_id", value: params.missionId ? params.missionId : '' },
           { name: "mission_index", value: params.missionIndex ? params.missionIndex : '' },
+          { name: "range", value: params.range ? params.range : '' },
         ]
       };
 
@@ -114,6 +115,7 @@ export class ActivityService extends Service {
           { name: "updated_at", value: Date.now().toString() },
           { name: "mission_id", value: post.mission_id },
           { name: "mission_index", value: post.mission_index },
+          { name: "range", value: post.range },
         ]
       };
 
@@ -171,8 +173,10 @@ export class ActivityService extends Service {
       let posts = [];
       for (let i = 0; i < data.length; i++) {
         let post = await this.getPostContent(data[i]);
-        posts.push(post);
-        Server.public.addPostToCache(post);
+        if (post.range !== 'private') {
+          posts.push(post);
+          Server.public.addPostToCache(post);
+        }
       }
       
       Server.public.addPostsToCache(posts);
@@ -233,8 +237,16 @@ export class ActivityService extends Service {
       let posts = [];
       for (let i = 0; i < data.length; i++) {
         let post = await this.getPostContent(data[i]);
-        posts.push(post);
-        Server.public.addPostToCache(post);
+        if (post.range === 'private') {
+          if (author === Server.user.getId()) {
+            posts.push(post);
+            Server.public.addPostToCache(post);
+          }
+        }
+        else {
+          posts.push(post);
+          Server.public.addPostToCache(post);
+        }
       }
 
       Server.public.addPostsOfAuthorToCache(posts, author);
@@ -514,6 +526,9 @@ export class ActivityService extends Service {
     let block   = data.node.block;
     let url     = tags[7].value ? tags[7].value : ARWEAVE_GATEWAY + data.node.id;
   
+    let range;
+    if (tags[12]) range = tags[12].value;
+    
     let post = {
       id: tags[2].value,
       author: tags[3].value,
@@ -525,6 +540,7 @@ export class ActivityService extends Service {
       updated_at: tags[9].value,
       mission_id: tags[10].value,
       mission_index: tags[11].value,
+      range: range,
       content: '',
       block_id: block.id,
       block_height: block.height, // number

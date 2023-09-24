@@ -193,7 +193,7 @@ export function convertSlug(str: string):any {
  * @param str
  * @returns 
  */
-export function convertHashTag(str: string):any {
+export function convertHashTag(str: string): string {
   const pattern = /#\w+(-\w+)*/g;
   str = str.replace(pattern, function (hashtag) {
     return `<a className='activity-page-slug-link' href='/topic/${hashtag.substring(1)}' id="url-${hashtag}">${hashtag}</a>`;

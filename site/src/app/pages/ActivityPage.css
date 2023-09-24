@@ -9,13 +9,17 @@
 
 .activity-page-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 15px;
 }
 
 .activity-page-filter {
-  width: 170px;
+  width: 140px;
   padding: 0 10px;
+}
+
+.activity-page-filter.post {
+  width: 120px;
 }
 
 .activity-page-word-count {

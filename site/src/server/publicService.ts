@@ -114,6 +114,10 @@ export class PublicService extends Service {
     return this.postsOfAuthor[id];
   }
 
+  public removePostsOfAuthorFromCache() {
+    this.postsOfAuthor = null;
+  }
+
   public addMissionsOfAuthorToCache(missions:any, id:string) {
     this.missionsOfAuthor[id] = missions;
   }
@@ -401,5 +405,14 @@ export class PublicService extends Service {
       console.log("ERR:", error);
       return {success: false, message: 'getProfileFromServer failed.'};
     }
+  }
+
+  public async cacheProfiles(posts: any) {
+    let profiles = [];
+    for (let i = 0; i < posts.length; i++) {
+      if (posts[i].author && profiles.indexOf(posts[i].author) == -1)
+        profiles.push(posts[i].author);
+    }
+    await Server.public.loadProfiles(profiles);
   }
 }

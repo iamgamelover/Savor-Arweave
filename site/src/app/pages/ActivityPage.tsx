@@ -9,6 +9,7 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { subscribe } from '../util/event';
 import { TIPS_ARWEAVE } from '../util/consts';
+import { BsEye } from 'react-icons/bs';
 
 export function checkContent(quillRef: any, wordCount: number) {
   // console.log('wordCount', wordCount)
@@ -30,6 +31,7 @@ interface ActivityPageState {
   message: string;
   alert: string;
   category: string;
+  range: string;
   loading: boolean;
 }
 
@@ -45,9 +47,11 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
       message: '',
       alert: '',
       category: 'community',
+      range: 'everyone',
       loading: false
     };
 
+    this.onRangeChange = this.onRangeChange.bind(this);
     this.onCategoryChange = this.onCategoryChange.bind(this);
     this.onContentChange = this.onContentChange.bind(this);
     this.afterRepost = this.afterRepost.bind(this);
@@ -62,9 +66,14 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
     this.wordCount = length;
   };
 
+  onRangeChange(e: React.FormEvent<HTMLSelectElement>) {
+    const element = e.target as HTMLSelectElement;
+    this.setState({range: element.value});
+  }
+
   onCategoryChange(e: React.FormEvent<HTMLSelectElement>) {
     const element = e.target as HTMLSelectElement;
-    this.setState({category: element.value});
+    this.setState({category: element.value, posts: []});
     this.getPosts(element.value);
   }
 
@@ -88,23 +97,20 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
     Server.public.addPositionToCache(div.scrollTop);
   }
 
-  async getPosts(params: any) {
+  async getPosts(category: string) {
     if (this.state.posts.length == 0)
       this.setState({loading: true});
 
-    let response = await Server.activity.getPosts();
+    let response;
+    if (category === 'private')
+      response = await Server.activity.getPostsOfAuthor(Server.user.getId());
+    else
+      response = await Server.activity.getPosts();
+
     if (!response.success) return;
 
     let posts = response.posts;
     this.setState({ posts, loading: false });
-
-    // cache profiles
-    let profiles = [];
-    for (let i = 0; i < posts.length; i++) {
-      if (posts[i].author && profiles.indexOf(posts[i].author) == -1)
-        profiles.push(posts[i].author);
-    }
-    await Server.public.loadProfiles(profiles);
   }
 
   async onPost() {
@@ -117,7 +123,10 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
     this.setState({message: 'Posting...'});
 
     let html   = this.quillRef.root.innerHTML;
-    let params = {content: encodeURIComponent(html)};
+    let params = {
+      range: this.state.range,
+      content: encodeURIComponent(html)
+    };
 
     let response = await Server.activity.createPost(params);
 
@@ -168,7 +177,7 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
       before: {date: date, author: author}
     }
 
-    this.getPosts(params);
+    // this.getPosts(params);
   }
 
   afterRepost() {
@@ -188,23 +197,30 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
             />
 
             <div className='activity-page-actions'>
+              <select
+                className="activity-page-filter post" 
+                value={this.state.range} 
+                onChange={this.onRangeChange}
+              >
+                <option value="everyone">Everyone</option>
+                <option value="following">Following</option>
+                <option value="private">Private</option>
+              </select>
+
               <button onClick={()=>this.onPost()}>Post</button>
             </div>
           </div>
         }
 
-        {/* <div style={{textAlign: 'left', marginTop: '10px'}}>
-          <select
-            className="activity-page-filter" 
-            value={this.state.category} 
-            onChange={this.onCategoryChange}
-          >
-            <option value="community">Community</option>
-            <option value="friends">Friends</option>
-            <option value="following">Following</option>
-            <option value="user">My Posts</option>
-          </select>
-        </div> */}
+        <select
+          className="activity-page-filter" 
+          value={this.state.category} 
+          onChange={this.onCategoryChange}
+        >
+          <option value="community">Community</option>
+          <option value="following">Following</option>
+          <option value="private">My Posts</option>
+        </select>
 
         {this.renderPosts()}
 
