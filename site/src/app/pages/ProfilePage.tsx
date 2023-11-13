@@ -10,6 +10,7 @@ import QuestionModal from '../modals/QuestionModal';
 import EditProfileModal from '../modals/EditProfileModal';
 import './ProfilePage.css'
 import ActivityPost from '../elements/ActivityPost';
+import TopicCard from '../elements/TopicCard';
 
 interface ProfilePageState {
   profile: any;
@@ -25,6 +26,7 @@ interface ProfilePageState {
   userListTitle: string;
   userList: string[];
   posts: any[];
+  topics: any[];
   missions: any[];
   loading: boolean;
   loadingMorePosts: boolean;
@@ -33,7 +35,7 @@ interface ProfilePageState {
 class ProfilePage extends React.Component<{}, ProfilePageState> {
   author = '';
   posLodMore = 0;
-  isActivity = true;
+  // isActivity = true;
   filterSelected = 0;
 
   constructor(props: {}) {
@@ -53,6 +55,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       userListTitle: 'Following',
       userList: [],
       posts: [],
+      topics: [],
       missions: [],
       loading: false,
       loadingMorePosts: false
@@ -113,10 +116,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     // this.getFollowersAndFollowing(response.profile);
 
     this.author = response.profile.id;
-    if (this.isActivity)
-      this.getPosts(this.author);
-    else
-      this.getMissions(this.author);
+    this.getPosts(this.author);
   }
 
   onQuestionYes() {
@@ -282,6 +282,34 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs.length > 0 ? divs : <div>No posts yet.</div>
   }
 
+  async getTopics(author: string) {
+    let topics = Server.public.getTopicsOfAuthorFromCache(author);
+    if (topics) {
+      this.setState({ topics });
+      return;
+    }
+
+    if (this.state.topics.length == 0)
+      this.setState({loading: true});
+
+    let response = await Server.topic.getTopicsOfAuthor(author);
+    if (!response.success) return;
+
+    topics = response.topics;
+    this.setState({ topics, loading: false });
+  }
+  
+  renderTopics() {
+    if(this.state.loading) 
+      return (<div>Loading...</div>); 
+
+    let divs = [];
+    for (let i = 0; i < this.state.topics.length; i++)
+      divs.push(<TopicCard key={i} data={this.state.topics[i]}/>)
+
+    return divs.length > 0 ? divs : <div>No topics yet.</div>
+  }
+
   async getMissions(author: string) {
     let missions = Server.public.getMissionsOfAuthorFromCache(author);
     if (missions) {
@@ -319,24 +347,26 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
   
   onFilter(index: number) {
+    if (this.filterSelected === index) return;
+    
     // sessionStorage.setItem('profile-filter', this.isActivity.toString());
     this.filterSelected = index;
     this.renderFilters();
 
     if (index === 0) { // Activity
-      // this.setState({posts: []});
+      this.setState({posts: []});
       setTimeout(() => {
         this.getPosts(this.author);
       }, 10);
     }
     else if (index === 1) { // Topics
-      // this.setState({missions: []});
+      this.setState({topics: []});
       setTimeout(() => {
-        this.getMissions(this.author);
+        this.getTopics(this.author);
       }, 10);
     }
     else { // Missions
-      // this.setState({missions: []});
+      this.setState({missions: []});
       setTimeout(() => {
         this.getMissions(this.author);
       }, 10);
@@ -438,14 +468,14 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
             {this.filterSelected === 0
               ? <div className='profile-page-posts'>{this.renderPosts()}</div>
               : this.filterSelected === 1
-                ? <div className='profile-page-posts'>{this.renderMissions()}</div>
+                ? <div className='profile-page-posts'>{this.renderTopics()}</div>
                 : <div className='profile-page-posts'>{this.renderMissions()}</div>
             }
 
-            {!this.state.loading && this.isActivity
+            {/* {!this.state.loading && this.filterSelected === 0
               ? this.state.posts.length > 0 && this.renderLoadMoreButton()
               : this.state.missions.length > 0 && this.renderLoadMoreButton()
-            }
+            } */}
           </div>
         </div>
 

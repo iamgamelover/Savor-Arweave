@@ -175,11 +175,6 @@ export class TopicService extends Service {
       let topics = [];
       for (let i = 0; i < data.length; i++) {
         let topic = await this.getTopicContent(data[i]);
-        // if (topic.range !== 'private') {
-        //   topics.push(topic);
-        //   Server.public.addTopicToCache(topic);
-        // }
-
         if (topic.range === 'private') {
           if (topic.author === Server.user.getId()) {
             topics.push(topic);
@@ -201,6 +196,76 @@ export class TopicService extends Service {
     } catch (error) {
       console.log("ERR:", error);
       return {success: false, message: 'getTopics failed.'};
+    }
+  }
+
+  public async getTopicsOfAuthor(author: string) {
+    let start = performance.now();
+    console.log('==> [getTopicsOfAuthor]');
+
+    const queryObject = {
+      query:
+      `{
+        transactions (
+          first: 10
+          tags: [
+            {
+              name: "table",
+              values: ["${process.env.REACT_APP_TABLE_TOPICS}"]
+            }
+            {
+              name: "author",
+              values: ["${author}"]
+            }
+          ]
+        ) {
+          edges {
+            node {
+              id
+              tags {
+                name
+                value
+              }
+              block {
+                id
+                timestamp
+                height
+                previous
+              }
+            }
+          }
+        }
+      }`
+    };
+
+    try {
+      let response = await fetchGraphQL(queryObject);
+      let data = Server.topic.removeDuplicate(response);
+      
+      let topics = [];
+      for (let i = 0; i < data.length; i++) {
+        let topic = await this.getTopicContent(data[i]);
+        if (topic.range === 'private') {
+          if (author === Server.user.getId()) {
+            topics.push(topic);
+            Server.public.addTopicToCache(topic);
+          }
+        }
+        else {
+          topics.push(topic);
+          Server.public.addTopicToCache(topic);
+        }
+      }
+
+      Server.public.addTopicsOfAuthorToCache(topics, author);
+
+      let end = performance.now();
+      console.log(`<== [getTopicsOfAuthor] [${Math.round(end - start)} ms]`);
+      
+      return {success: true, topics};
+    } catch (error) {
+      console.log("ERR:", error);
+      return {success: false, message: 'getTopicsOfAuthor failed.'};
     }
   }
 

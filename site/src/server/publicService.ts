@@ -21,6 +21,7 @@ export class PublicService extends Service {
   protected topicContent:any;
   protected replies:any;
   protected topics:any;
+  protected topicsOfAuthor:any;
   protected topic:any;
   protected missions:any;
   protected mission:any;
@@ -32,6 +33,7 @@ export class PublicService extends Service {
     this.postsOfMission = [];
     this.postsOfTopic = [];
     this.postsOfAuthor = [];
+    this.topicsOfAuthor = [];
     this.missionsOfAuthor = [];
     this.missionsOfTopic = [];
     this.post = [];
@@ -188,6 +190,18 @@ export class PublicService extends Service {
 
   public removeTopicsFromCache() {
     this.topics = null;
+  }
+
+  public addTopicsOfAuthorToCache(topics:any, id:string) {
+    this.topicsOfAuthor[id] = topics;
+  }
+
+  public getTopicsOfAuthorFromCache(id:string) {
+    return this.topicsOfAuthor[id];
+  }
+
+  public removeTopicsOfAuthorFromCache() {
+    this.topicsOfAuthor = null;
   }
 
   public addTopicToCache(topic:any) {

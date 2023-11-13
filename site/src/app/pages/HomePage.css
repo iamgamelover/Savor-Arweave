@@ -215,10 +215,13 @@
   margin: 0 10px;
   cursor: pointer;
   padding: 3px;
+  color: lightgray;
 }
 
 .home-page-filter.selected {
   border-bottom: 1px solid white;
+  color: white;
+  cursor: default;
 }
 
 .home-page-navlink {

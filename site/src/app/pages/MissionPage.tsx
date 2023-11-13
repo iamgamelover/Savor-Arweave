@@ -91,6 +91,7 @@ class MissionPage extends React.Component<{}, MissionPageState> {
   }
 
   onFilter(index: number) {
+    if (this.filterSelected === index) return;
     this.filterSelected = index;
     this.renderFilters();
     this.setState({posts: [], openEditor: false});

@@ -74,10 +74,13 @@
   margin: 0 10px;
   cursor: pointer;
   padding: 3px;
+  color: lightgray;
 }
 
 .mission-page-filter.selected {
   border-bottom: 1px solid white;
+  color: white;
+  cursor: default;
 }
 
 .mission-page-input-container {

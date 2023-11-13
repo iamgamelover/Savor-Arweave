@@ -80,6 +80,8 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   onFilter(index: number) {
+    if (this.filterSelected === index) return;
+    
     this.filterSelected = index;
 
     if (this.filterSelected == 0) {
