@@ -3,6 +3,7 @@ import { Server } from '../../server/server';
 import { formatTimestamp, getFirstImage } from '../util/util';
 import './TopicCard.css';
 import { NavLink } from 'react-router-dom';
+import { BsPersonFillLock } from 'react-icons/bs';
 
 interface TopicCardProps {
   data: any;
@@ -51,7 +52,8 @@ class TopicCard extends React.Component<TopicCardProps, TopicCardState> {
           <div className='topic-card-header'>
             <div className='topic-card-publisher'>{data.publisher}</div>
             <div className='topic-card-summary'>·</div>
-            <div className='topic-card-summary'>{formatTimestamp(data.block_timestamp, true)}</div>
+            <div className='topic-card-summary'>{formatTimestamp(data.created_at / 1000, true)}</div>
+            {data.range === 'private' && <BsPersonFillLock size={20} color='gray' />}
           </div>
           <div className='topic-card-title'>{data.title}</div>
           <div className='topic-card-summary'>{data.summary}</div>

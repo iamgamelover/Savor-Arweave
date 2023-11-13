@@ -223,7 +223,7 @@ export class PublicService extends Service {
     let data = await resp.json();
     let content = decodeURIComponent(data.content);
     content     = BadWords.clean(content);
-    console.log("--> downloadFromArweave", content)
+    // console.log("--> downloadFromArweave", content)
     return content;
   }
 

@@ -13,9 +13,10 @@ import { TIPS_ARWEAVE } from '../util/consts';
 import { subscribe } from '../util/event';
 
 interface EditTopicPageState {
-  publisher: string;
   title: string;
+  publisher: string;
   category: string;
+  range: string;
   date: string;
   tags: string;
   wordCount: number;
@@ -38,9 +39,10 @@ class EditTopicPage extends React.Component<{}, EditTopicPageState> {
     super(props);
     this.quillRef = null;
     this.state = {
-      publisher: '',
       title: '',
+      publisher: '',
       category: 'normal',
+      range: 'everyone',
       date: '',
       tags: '',
       wordCount: 0,
@@ -57,6 +59,7 @@ class EditTopicPage extends React.Component<{}, EditTopicPageState> {
     this.onPublisherChange = this.onPublisherChange.bind(this);
     this.onTitleChange = this.onTitleChange.bind(this);
     this.onCategoryChange = this.onCategoryChange.bind(this);
+    this.onRangeChange = this.onRangeChange.bind(this);
     this.onContentChange = this.onContentChange.bind(this);
     this.onQuestionYes = this.onQuestionYes.bind(this);
     this.onQuestionNo = this.onQuestionNo.bind(this);
@@ -114,6 +117,7 @@ class EditTopicPage extends React.Component<{}, EditTopicPageState> {
       title: this.state.title,
       publisher: this.state.publisher,
       category: this.state.category,
+      range: this.state.range,
       summary: summary,
       banner:  '/banner-planets.png', // will be updated
       content: encodeURIComponent(content),
@@ -131,8 +135,19 @@ class EditTopicPage extends React.Component<{}, EditTopicPageState> {
     else
       response = await Server.topic.createTopic(params);
 
-    if (response.success)
-      this.setState({message: '', goTopicsPage: true});
+    if (response.success) {
+      // clear the form
+      this.quillRef.setText('');
+      this.setState({
+        title: '',
+        publisher: '',
+        category: 'normal',
+        range: 'everyone'
+      });
+  
+      // this.setState({message: '', goTopicsPage: true});
+      this.setState({message: '', alert: TIPS_ARWEAVE});
+    }
     else
       this.setState({message: '', alert: response.message})
   }
@@ -145,6 +160,10 @@ class EditTopicPage extends React.Component<{}, EditTopicPageState> {
     this.setState({category: e.currentTarget.value});
   };
 
+  onRangeChange(e: any) {
+    this.setState({range: e.currentTarget.value});
+  };
+  
   onTitleChange(e: React.FormEvent<HTMLInputElement>): void {
     this.setState({title: e.currentTarget.value});
   };
@@ -277,19 +296,34 @@ class EditTopicPage extends React.Component<{}, EditTopicPageState> {
           <input placeholder="Publisher" value={this.state.publisher} onChange={this.onPublisherChange} />
         </div>
 
-        <div className="edit-topic-page-title">
-          <div>Category:</div>
-          <select
-            className="topics-page-filter" 
-            value={this.state.category} 
-            onChange={this.onCategoryChange}
-          >
-            <option value="normal">Normal</option>
-            <option value="travel">Travel</option>
-            <option value="music">Music</option>
-            <option value="sports">Sports</option>
-            <option value="movies">Movies</option>
-          </select>
+        <div className='edit-topic-page-select-row'>
+          <div className="edit-topic-page-title">
+            <div>Category:</div>
+            <select
+              className="topics-page-filter" 
+              value={this.state.category} 
+              onChange={this.onCategoryChange}
+            >
+              <option value="normal">Normal</option>
+              <option value="travel">Travel</option>
+              <option value="music">Music</option>
+              <option value="sports">Sports</option>
+              <option value="movies">Movies</option>
+            </select>
+          </div>
+
+          <div className="edit-topic-page-title">
+            <div>Range:</div>
+            <select
+              className="topics-page-filter" 
+              value={this.state.range} 
+              onChange={this.onRangeChange}
+            >
+              <option value="everyone">Everyone</option>
+              {/* <option value="following">Following</option> */}
+              <option value="private">Private</option>
+            </select>
+          </div>
         </div>
 
         <SharedQuillEditor

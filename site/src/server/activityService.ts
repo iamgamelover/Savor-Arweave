@@ -173,7 +173,13 @@ export class ActivityService extends Service {
       let posts = [];
       for (let i = 0; i < data.length; i++) {
         let post = await this.getPostContent(data[i]);
-        if (post.range !== 'private') {
+        if (post.range === 'private') {
+          if (post.author === Server.user.getId()) {
+            posts.push(post);
+            Server.public.addPostToCache(post);
+          }
+        }
+        else {
           posts.push(post);
           Server.public.addPostToCache(post);
         }
@@ -526,8 +532,14 @@ export class ActivityService extends Service {
     let block   = data.node.block;
     let url     = tags[7].value ? tags[7].value : ARWEAVE_GATEWAY + data.node.id;
   
+    // TODO: will be removed at next big version
     let range;
     if (tags[12]) range = tags[12].value;
+    
+    // check the block
+    if (!block) {
+      block = {id: '', height: 0, timestamp: 0}
+    }
     
     let post = {
       id: tags[2].value,

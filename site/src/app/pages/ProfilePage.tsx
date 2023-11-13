@@ -34,6 +34,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   author = '';
   posLodMore = 0;
   isActivity = true;
+  filterSelected = 0;
 
   constructor(props: {}) {
     super(props);
@@ -79,8 +80,8 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   componentDidMount() {
-    let filter = sessionStorage.getItem('profile-filter');
-    this.isActivity = filter ? JSON.parse(filter) : true;
+    // let filter = sessionStorage.getItem('profile-filter');
+    // this.isActivity = filter ? JSON.parse(filter) : true;
 
     this.loadProfile();
     window.addEventListener('popstate', this.onPopState);
@@ -211,29 +212,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     // )
   }
 
-  onFilter(filter: boolean) {
-    if (this.isActivity == filter)
-      return;
-
-    this.isActivity = filter;
-    this.posLodMore = 0;
-
-    sessionStorage.setItem('profile-filter', this.isActivity.toString());
-
-    if (this.isActivity) {
-      this.setState({posts: []});
-      setTimeout(() => {
-        this.getPosts(this.author);
-      }, 10);
-    }
-    else {
-      this.setState({missions: []});
-      setTimeout(() => {
-        this.getMissions(this.author);
-      }, 10);
-    }
-  }
-
   onLoadMore() {
     // let data  = this.isActivity ? this.state.posts : this.state.missions;
     // let index = data.length - 1;
@@ -340,6 +318,49 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs.length > 0 ? divs : <div>No missions yet.</div>
   }
   
+  onFilter(index: number) {
+    // sessionStorage.setItem('profile-filter', this.isActivity.toString());
+    this.filterSelected = index;
+    this.renderFilters();
+
+    if (index === 0) { // Activity
+      // this.setState({posts: []});
+      setTimeout(() => {
+        this.getPosts(this.author);
+      }, 10);
+    }
+    else if (index === 1) { // Topics
+      // this.setState({missions: []});
+      setTimeout(() => {
+        this.getMissions(this.author);
+      }, 10);
+    }
+    else { // Missions
+      // this.setState({missions: []});
+      setTimeout(() => {
+        this.getMissions(this.author);
+      }, 10);
+    }
+  }
+
+  renderFilters() {
+    let filters = ['Activity', 'Topics', 'Missions'];
+
+    let divs = [];
+    for (let i = 0; i < filters.length; i++) {
+      divs.push(
+        <div
+          className={`mission-page-filter ${this.filterSelected == i ? 'selected' : ''}`}
+          onClick={() => this.onFilter(i)} key={i}
+        >
+          {filters[i]}
+        </div>
+      );
+    }
+
+    return divs;
+  }
+
   render() {
     if(this.state.navigate != '') 
       return <Navigate to={this.state.navigate} />;
@@ -387,7 +408,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
           <div className="profile-page-name">{this.state.profile.name}</div>
           <div className="profile-page-id">{shortId}</div>
-          {/* <div className="profile-page-slug">@{this.state.profile.slug}</div> */}
           <div className="profile-page-desc">{this.state.profile.bio}</div>
           <div className='profile-page-joined-container'>
             <BsCalendarWeek color='white'/>
@@ -407,24 +427,19 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
           <div className='profile-page-social-container'>
             <div className='profile-page-social-header'>
-              <div style={{display: 'flex'}}>
-                <div className={`profile-page-filter ${this.isActivity ? 'selected' : ''}`} onClick={()=>this.onFilter(true)}>
-                  Activity
-                </div>
-                <div className={`profile-page-filter ${this.isActivity ? '' : 'selected'}`} onClick={()=>this.onFilter(false)}>
-                  Missions
-                </div>
-              </div>
+              <div style={{display: 'flex'}}>{this.renderFilters()}</div>
 
-              {this.isActivity 
+              {/* {this.isActivity 
                 ? <NavLink className='profile-page-navlink' to='/activity'>All Posts</NavLink>
                 : <NavLink className='profile-page-navlink' to='/missions'>All Missions</NavLink>
-              }
+              } */}
             </div>
 
-            {this.isActivity
+            {this.filterSelected === 0
               ? <div className='profile-page-posts'>{this.renderPosts()}</div>
-              : <div className='profile-page-posts'>{this.renderMissions()}</div>
+              : this.filterSelected === 1
+                ? <div className='profile-page-posts'>{this.renderMissions()}</div>
+                : <div className='profile-page-posts'>{this.renderMissions()}</div>
             }
 
             {!this.state.loading && this.isActivity

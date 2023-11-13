@@ -1,5 +1,5 @@
 import React from 'react';
-import { BsChat, BsChatSquareText, BsCoin } from 'react-icons/bs';
+import { BsChat, BsChatSquareText, BsCoin, BsEyeglasses, BsPersonFillLock } from 'react-icons/bs';
 import { capitalizeFirstLetter, convertHashTag, convertUrls, getPortraitImage, numberWithCommas } from '../util/util';
 import { Server } from '../../server/server';
 import { formatTimestamp } from '../util/util';
@@ -199,7 +199,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   render() {
     let data    = this.props.data;
     let author  = this.state.author;
-    let date    = formatTimestamp(data.block_timestamp, true);
+    let date    = formatTimestamp(data.created_at / 1000, true);
     let topic   = Server.public.getTopicFromCache(data.topic_id);
     let mission = Server.public.getMissionFromCache(data.mission_id);
     let path    = window.location.pathname.substring(1, 6);
@@ -214,7 +214,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         onClick={()=>this.onJump(data.id)}
       >
         <div className='activity-post-row-header'>
-          {date}
+          <div className='activity-post-date'>
+            {date}
+            {data.range === 'private' && <BsPersonFillLock size={20} />}
+          </div>
           
           {topic && path !== 'topic' &&
             <NavLink className='activity-post-hashtag' to={'/topic/' + topic.id}>

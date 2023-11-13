@@ -38,6 +38,7 @@ export class TopicService extends Service {
           { name: "url", value: '' },
           { name: "created_at", value: Date.now().toString() },
           { name: "updated_at", value: Date.now().toString() },
+          { name: "range", value: params.range },
         ]
       };
 
@@ -116,6 +117,7 @@ export class TopicService extends Service {
           { name: "url", value: topic.url },
           { name: "created_at", value: topic.created_at },
           { name: "updated_at", value: Date.now().toString() },
+          { name: "range", value: topic.range },
         ]
       };
 
@@ -173,8 +175,21 @@ export class TopicService extends Service {
       let topics = [];
       for (let i = 0; i < data.length; i++) {
         let topic = await this.getTopicContent(data[i]);
-        topics.push(topic);
-        Server.public.addTopicToCache(topic);
+        // if (topic.range !== 'private') {
+        //   topics.push(topic);
+        //   Server.public.addTopicToCache(topic);
+        // }
+
+        if (topic.range === 'private') {
+          if (topic.author === Server.user.getId()) {
+            topics.push(topic);
+            Server.public.addTopicToCache(topic);
+          }
+        }
+        else {
+          topics.push(topic);
+          Server.public.addTopicToCache(topic);
+        }
       }
 
       Server.public.addTopisToCache(topics);
@@ -251,6 +266,15 @@ export class TopicService extends Service {
     let block   = data.node.block;
     let url     = tags[11].value ? tags[11].value : ARWEAVE_GATEWAY + data.node.id;
 
+    // TODO: will be removed at next big version
+    let range;
+    if (tags[14]) range = tags[14].value;
+
+    // check the block
+    if (!block) {
+      block = {id: '', height: 0, timestamp: 0}
+    }
+
     let topic = {
       id: tags[2].value,
       title: tags[3].value,
@@ -264,6 +288,7 @@ export class TopicService extends Service {
       url: url,
       created_at: tags[12].value,
       updated_at: tags[13].value,
+      range: range,
       content: '',
       image: '/topic-default.jpg',
       block_id: block.id,
@@ -514,7 +539,6 @@ export class TopicService extends Service {
     let tags    = data.node.tags;
     let block   = data.node.block;
     let url     = tags[10].value ? tags[10].value : ARWEAVE_GATEWAY + data.node.id;
-    // let content = await Server.public.downloadFromArweave(url);
 
     let mission = {
       id: tags[2].value,
@@ -528,7 +552,6 @@ export class TopicService extends Service {
       url: url,
       created_at: tags[11].value,
       updated_at: tags[12].value,
-      // content: content,
       content: '',
       block_id: block.id,
       block_height: block.height, // number

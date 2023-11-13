@@ -203,7 +203,7 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
                 onChange={this.onRangeChange}
               >
                 <option value="everyone">Everyone</option>
-                <option value="following">Following</option>
+                {/* <option value="following">Following</option> */}
                 <option value="private">Private</option>
               </select>
 
@@ -212,7 +212,7 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
           </div>
         }
 
-        <select
+        {/* <select
           className="activity-page-filter" 
           value={this.state.category} 
           onChange={this.onCategoryChange}
@@ -220,7 +220,7 @@ class ActivityPage extends React.Component<{}, ActivityPageState> {
           <option value="community">Community</option>
           <option value="following">Following</option>
           <option value="private">My Posts</option>
-        </select>
+        </select> */}
 
         {this.renderPosts()}
 

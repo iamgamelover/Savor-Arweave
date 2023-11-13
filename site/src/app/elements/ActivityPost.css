@@ -93,3 +93,9 @@
   border-radius: 50%;
   margin-right: 8px;
 }
+
+.activity-post-date {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+}

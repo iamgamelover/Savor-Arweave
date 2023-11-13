@@ -96,6 +96,11 @@
   color: #ffffff80;
 }
 
+.edit-topic-page-select-row {
+  display: flex;
+  column-gap: 20px;
+}
+
 @media (max-width: 600px) {
   .edit-topic-page {
     padding: 10px;
