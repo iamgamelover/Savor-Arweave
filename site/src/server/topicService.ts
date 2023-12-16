@@ -1,5 +1,5 @@
 import { ARWEAVE_GATEWAY } from '../app/util/consts';
-import { fetchGraphQL, getFirstImage, uuid } from '../app/util/util';
+import { fetchGraphQL, getFirstImage, removeDuplicate, uuid } from '../app/util/util';
 import { Server } from './server';
 import { Service, ServiceResponse } from './service';
 
@@ -170,7 +170,7 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = this.removeDuplicate(response);
+      let data = removeDuplicate(response);
 
       let topics = [];
       for (let i = 0; i < data.length; i++) {
@@ -240,7 +240,7 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = Server.topic.removeDuplicate(response);
+      let data = removeDuplicate(response);
       
       let topics = [];
       for (let i = 0; i < data.length; i++) {
@@ -400,7 +400,7 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = this.removeDuplicate(response);
+      let data = removeDuplicate(response);
 
       let missions = [];
       for (let i = 0; i < data.length; i++) {
@@ -461,7 +461,7 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = this.removeDuplicate(response);
+      let data = removeDuplicate(response);
 
       let missions = [];
       for (let i = 0; i < data.length; i++) {
@@ -522,7 +522,7 @@ export class TopicService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = this.removeDuplicate(response);
+      let data = removeDuplicate(response);
 
       let missions = [];
       for (let i = 0; i < data.length; i++) {
@@ -671,17 +671,4 @@ export class TopicService extends Service {
     }
   }
 
-  removeDuplicate(data: any) {
-    let result = [];
-    let ids    = [] as any;
-    for (let i = 0; i < data.length; i++) {
-      let id = data[i].node.tags[2].value;
-      if (!ids.includes(id)) {
-        ids.push(id);
-        result.push(data[i]);
-      }
-    }
-
-    return result;
-  }
 }

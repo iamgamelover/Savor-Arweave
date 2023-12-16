@@ -134,10 +134,10 @@ class LoginModal extends React.Component<LoginModalProps, LoginModalState> {
           </div>
           <br/>
 
-          {/* <div className='login-modal-button-wc'>
+          <div className='login-modal-button-wc'>
             <img className="login-modal-icon" src='/icon/wc.png' /> 
             <button style={{width: '170px'}} onClick={()=>this.onWallectConnect()}>Wallet Connect</button>
-          </div> */}
+          </div>
         </div>
 
         <MessageModal message={this.state.message} />

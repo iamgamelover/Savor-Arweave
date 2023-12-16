@@ -359,3 +359,17 @@ export async function fetchGraphQL(queryObject: any) {
 export function capitalizeFirstLetter(str: string) {
   return str.replace(/^\w/, c => c.toUpperCase());
 }
+
+export function removeDuplicate(data: any) {
+  let result = [];
+  let ids    = [] as any;
+  for (let i = 0; i < data.length; i++) {
+    let id = data[i].node.tags[2].value;
+    if (!ids.includes(id)) {
+      ids.push(id);
+      result.push(data[i]);
+    }
+  }
+
+  return result;
+}

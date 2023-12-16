@@ -2,7 +2,7 @@ import { Server } from './server';
 import { Service, ServiceResponse } from './service';
 import { ARWEAVE_GATEWAY, ETH_TAG } from '../app/util/consts';
 import { genNodeAPI } from 'arseeding-js';
-import { fetchGraphQL, uuid } from '../app/util/util';
+import { fetchGraphQL, removeDuplicate, uuid } from '../app/util/util';
 
 export class ActivityService extends Service {
   constructor() {
@@ -168,7 +168,7 @@ export class ActivityService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = Server.topic.removeDuplicate(response);
+      let data = removeDuplicate(response);
       
       let posts = [];
       for (let i = 0; i < data.length; i++) {
@@ -238,7 +238,7 @@ export class ActivityService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = Server.topic.removeDuplicate(response);
+      let data = removeDuplicate(response);
       
       let posts = [];
       for (let i = 0; i < data.length; i++) {
@@ -308,7 +308,7 @@ export class ActivityService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = Server.topic.removeDuplicate(response);
+      let data = removeDuplicate(response);
       
       let posts = [];
       for (let i = 0; i < data.length; i++) {
@@ -506,7 +506,7 @@ export class ActivityService extends Service {
 
     try {
       let response = await fetchGraphQL(queryObject);
-      let data = Server.topic.removeDuplicate(response);
+      let data = removeDuplicate(response);
 
       let posts = [];
       for (let i = 0; i < data.length; i++) {
