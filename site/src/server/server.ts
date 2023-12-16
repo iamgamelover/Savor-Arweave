@@ -34,8 +34,8 @@ export class Server {
       LoginModal.subscribeMetaMaskEvents();
       this.web3 = new Web3(window.ethereum);
     }
-    // else
-    //   await this.initProvider();
+    else
+      await this.initProvider();
 
     if (Server.account.isLoggedIn()) {
       await Server.user.sync();
